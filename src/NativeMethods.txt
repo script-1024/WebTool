@@ -1,0 +1,14 @@
+﻿GetForegroundWindow
+GetActiveWindow
+GetDpiForWindow
+GetDpiForMonitor
+GetSystemMetrics
+GetMonitorInfo
+GetWindowRect
+SetWindowPos
+SetWindowLong
+ShowWindow
+SendMessage
+CallWindowProc
+MonitorFromRect
+LoadImage
