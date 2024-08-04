@@ -17,8 +17,7 @@ public class DisplayInfo
     {
         get
         {
-            _ = PInvoke.GetDpiForMonitor(hMonitor,
-                MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out uint widthDPI, out _);
+            PInvoke.GetDpiForMonitor(hMonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out uint widthDPI, out _);
             float scalingFactor = (float)widthDPI / 96;
             return (int)(ScreenHeight / scalingFactor);
         }
@@ -27,8 +26,7 @@ public class DisplayInfo
     {
         get
         {
-            _ = PInvoke.GetDpiForMonitor(hMonitor,
-                MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out _, out uint heightDPI);
+            PInvoke.GetDpiForMonitor(hMonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out _, out uint heightDPI);
             float scalingFactor = (float)heightDPI / 96;
             return (int)(ScreenWidth / scalingFactor);
         }
@@ -88,12 +86,12 @@ unsafe public class DisplayInformation
 
     unsafe public static List<DisplayInfo> GetDisplays()
     {
-        List<DisplayInfo> col = new();
+        List<DisplayInfo> col = [];
 
         _ = EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero,
             delegate (HMONITOR hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData)
             {
-                MONITORINFO mi = new MONITORINFO();
+                MONITORINFO mi = new();
                 mi.cbSize = (uint)Marshal.SizeOf(mi);
                 bool success = PInvoke.GetMonitorInfo(hMonitor, ref mi);
                 if (success)

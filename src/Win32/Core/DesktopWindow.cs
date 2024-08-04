@@ -8,34 +8,22 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Windows.Win32.Core;
 
-public class WindowPosition
+public struct WindowPosition(int top, int left)
 {
-    public int Top { get; private set; }
-    public int Left { get; private set; }
-    public WindowPosition(int top, int left)
-    {
-        this.Top = top;
-        this.Left = left;
-    }
+    public int Top { get; private set; } = top;
+    public int Left { get; private set; } = left;
 }
 
-public class WindowSizingEventArgs : EventArgs
+#region WindowEventArgs
+public class WindowEventArgs(DesktopWindow window) : EventArgs
 {
-    public DesktopWindow Window { get; private set; }
-    public WindowSizingEventArgs(DesktopWindow window)
-    {
-        Window = window;
-    }
+    public DesktopWindow Window { get; protected set; } = window;
 }
 
-public class WindowClosingEventArgs : EventArgs
-{
-    public DesktopWindow Window { get; private set; }
-    public WindowClosingEventArgs(DesktopWindow window)
-    {
-        Window = window;
-    }
+public class WindowSizingEventArgs(DesktopWindow window) : WindowEventArgs(window);
 
+public class WindowClosingEventArgs(DesktopWindow window) : WindowEventArgs(window)
+{
     public void TryCancel()
     {
         Window.IsClosing = true;
@@ -43,68 +31,32 @@ public class WindowClosingEventArgs : EventArgs
     }
 }
 
-public class WindowPreferredLanguageChangedEventArgs : EventArgs
+public class WindowPreferredLanguageChangedEventArgs(DesktopWindow window, string oldLanguage, string newLanguage) : WindowEventArgs(window)
 {
-    public DesktopWindow Window { get; private set; }
-    public string OldLanguage { get; private set; }
-    public string NewLanguage { get; private set; }
-
-    public WindowPreferredLanguageChangedEventArgs(DesktopWindow window, string oldLanguage, string newLanguage)
-    {
-        Window = window;
-        OldLanguage = oldLanguage;
-        NewLanguage = newLanguage;
-    }
+    public string OldLanguage { get; private set; } = oldLanguage;
+    public string NewLanguage { get; private set; } = newLanguage;
 }
 
-public class WindowDpiChangedEventArgs : EventArgs
+public class WindowDpiChangedEventArgs(DesktopWindow window, int newDpi) : WindowEventArgs(window)
 {
-    public DesktopWindow Window { get; private set; }
-    public int Dpi { get; private set; }
-
-    public WindowDpiChangedEventArgs(DesktopWindow window, int newDpi)
-    {
-        Window = window;
-        Dpi = newDpi;
-    }
+    public int Dpi { get; private set; } = newDpi;
 }
 
-public class WindowOrientationChangedEventArgs : EventArgs
+public class WindowOrientationChangedEventArgs(DesktopWindow window, DesktopWindow.Orientation newOrientation) : WindowEventArgs(window)
 {
-    public DesktopWindow Window { get; private set; }
-    public DesktopWindow.Orientation Orientation { get; private set; }
-
-    public WindowOrientationChangedEventArgs(DesktopWindow window, DesktopWindow.Orientation newOrientationi)
-    {
-        Window = window;
-        Orientation = newOrientationi;
-    }
+    public DesktopWindow.Orientation Orientation { get; private set; } = newOrientation;
 }
 
-public class WindowMovingEventArgs : EventArgs
+public class WindowMovingEventArgs(DesktopWindow window, WindowPosition windowPosition) : WindowEventArgs(window)
 {
-    public DesktopWindow Window { get; private set; }
-    public WindowPosition NewPosition { get; private set; }
-    public int Top { get; private set; }
-    public int Left { get; private set; }
-    public WindowMovingEventArgs(DesktopWindow window, WindowPosition windowPosition)
-    {
-        Window = window;
-        NewPosition = new(windowPosition.Top, windowPosition.Left);
-    }
+    public WindowPosition NewPosition { get; private set; } = new(windowPosition.Top, windowPosition.Left);
 }
 
-public class WindowKeyDownEventArgs : EventArgs
+public class WindowKeyEventArgs(DesktopWindow window, int key) : WindowEventArgs(window)
 {
-    public DesktopWindow Window { get; private set; }
-    public int Key { get; private set; }
-
-    public WindowKeyDownEventArgs(DesktopWindow window, int key)
-    {
-        Window = window;
-        Key = key;
-    }
+    public int Key { get; private set; } = key;
 }
+#endregion
 
 public class DesktopWindow : Window
 {
@@ -135,19 +87,13 @@ public class DesktopWindow : Window
     public event EventHandler<WindowSizingEventArgs> Sizing;
     public event EventHandler<WindowDpiChangedEventArgs> DpiChanged;
     public event EventHandler<WindowOrientationChangedEventArgs> OrientationChanged;
-    public event EventHandler<WindowKeyDownEventArgs> KeyDown;
+    public event EventHandler<WindowKeyEventArgs> KeyDown;
 
     private string _preferredLanguage;
 
-    public HWND Hwnd
-    {
-        get => _hwnd;
-    }
+    public HWND Hwnd => _hwnd;
 
-    public uint Dpi
-    {
-        get => PInvoke.GetDpiForWindow(_hwnd);
-    }
+    public uint Dpi => PInvoke.GetDpiForWindow(_hwnd);
 
     public DesktopWindow()
     {
@@ -164,10 +110,10 @@ public class DesktopWindow : Window
                 PlacementCenterWindowInMonitorWin32(_hwnd);
                 break;
             case Placement.TopLeftCorner:
-                PlacementTopLefWindowInMonitorWin32(_hwnd);
+                PlacementTopLeftWindowInMonitorWin32(_hwnd);
                 break;
             case Placement.BottomLeftCorner:
-                PlacementBottomLefWindowInMonitorWin32(_hwnd);
+                PlacementBottomLeftWindowInMonitorWin32(_hwnd);
                 break;
         }
     }
@@ -197,83 +143,45 @@ public class DesktopWindow : Window
         }
     }
 
-    public void Maximize()
-    {
-        _ = PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_MAXIMIZE);
-    }
+    public void Maximize() => PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_MAXIMIZE);
 
-    public void Minimize()
-    {
-        _ = PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_MINIMIZE);
-    }
+    public void Minimize() => PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_MINIMIZE);
 
-    public void Restore()
-    {
-        _ = PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
-    }
+    public void Restore() => PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
 
-    public void Hide()
-    {
-        _ = PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
-    }
+    public void Hide() => PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
 
-    public void BringToTop()
-    {
-        _ = PInvoke.SetWindowPos(_hwnd, SPECIAL_WINDOW_HANDLES.HWND_TOPMOST, 0, 0, 0, 0,
-            SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
-    }
-
+    public void BringToTop() => PInvoke.SetWindowPos(_hwnd, SPECIAL_WINDOW_HANDLES.HWND_TOPMOST, 0, 0, 0, 0,
+                                        SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
 
     #region Private
     private string _iconResource;
     private HWND _hwnd = HWND.Null;
     Orientation _currentOrientation;
 
-    private void OnClosing()
-    {
-        WindowClosingEventArgs windowClosingEventArgs = new(this);
-        Closing.Invoke(this, windowClosingEventArgs);
-    }
+    private void OnClosing() => Closing.Invoke(this, new(this));
 
-    private void OnWindowLanguageChanged(string oldLanguage, string newLanguage)
-    {
-        WindowPreferredLanguageChangedEventArgs eventArgs = new(this, oldLanguage, newLanguage);
-        PreferredLanguageChanged.Invoke(this, eventArgs);
-    }
+    private void OnWindowLanguageChanged(string oldLanguage, string newLanguage) => PreferredLanguageChanged.Invoke(this, new(this, oldLanguage, newLanguage));
 
     private void OnWindowMoving()
     {
         var windowPosition = GetWindowPositionWin32(_hwnd);
-        //windowPosition comes in pixels(Win32), so you need to convert into epx
+
+        //windowPosition comes in pixels(Win32), so we need to convert into epx
         WindowMovingEventArgs windowMovingEventArgs = new(this,
             new WindowPosition(
                 DisplayInformation.ConvertPixelToEpx(_hwnd, windowPosition.Top),
                 DisplayInformation.ConvertPixelToEpx(_hwnd, windowPosition.Left)));
+
         Moving.Invoke(this, windowMovingEventArgs);
     }
-    private void OnWindowSizing()
-    {
-        WindowSizingEventArgs windowSizingEventArgs = new(this);
-        Sizing.Invoke(this, windowSizingEventArgs);
-    }
+    private void OnWindowSizing() => Sizing.Invoke(this, new(this));
 
-    private void OnWindowDpiChanged(int newDpi)
-    {
-        WindowDpiChangedEventArgs windowDpiChangedEvent = new(this, newDpi);
-        DpiChanged.Invoke(this, windowDpiChangedEvent);
-    }
+    private void OnWindowDpiChanged(int newDpi) => DpiChanged.Invoke(this, new(this, newDpi));
 
-    private void OnWindowOrientationChanged(Orientation newOrinetation)
-    {
-        WindowOrientationChangedEventArgs windowOrientationChangedEventArgs = new(this, newOrinetation);
-        OrientationChanged.Invoke(this, windowOrientationChangedEventArgs);
-    }
+    private void OnWindowOrientationChanged(Orientation newOrinetation) => OrientationChanged.Invoke(this, new(this, newOrinetation));
 
-    private void OnWindowKeyDown(int key)
-    {
-        WindowKeyDownEventArgs windowKeyDownEventArgs = new(this, key);
-        KeyDown.Invoke(this, windowKeyDownEventArgs);
-    }
+    private void OnWindowKeyDown(int key) => KeyDown.Invoke(this, new(this, key));
 
     private WNDPROC newWndProc = null;
     private WNDPROC oldWndProc = null;
@@ -294,9 +202,6 @@ public class DesktopWindow : Window
             return SetWindowLongPtr32(hWnd, nIndex, newProc);
     }
 
-    [DllImport("user32.dll")]
-    static extern IntPtr CallWindowProc(WNDPROC lpPrevWndFunc, HWND hWnd, WINDOW_MESSAGES Msg, WPARAM wParam, LPARAM lParam);
-
     private void SubClassing()
     {
         //Get the Window's HWND
@@ -306,7 +211,7 @@ public class DesktopWindow : Window
         oldWndProc = SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, newWndProc);
     }
 
-    private void LoadIcon(HWND hwnd, string iconName)
+    private static void LoadIcon(HWND hwnd, string iconName)
     {
         const int ICON_SMALL = 0;
         const int ICON_BIG = 1;
@@ -420,7 +325,7 @@ public class DesktopWindow : Window
         return PInvoke.CallWindowProc(oldWndProc, hWnd, Msg, wParam, lParam);
     }
 
-    private Orientation GetWindowOrientationWin32(HWND hwnd)
+    private static Orientation GetWindowOrientationWin32(HWND hwnd)
     {
         Orientation orientationEnum;
         int theScreenWidth = DisplayInformation.GetDisplay(hwnd).ScreenWidth;
@@ -441,67 +346,61 @@ public class DesktopWindow : Window
             return (value >> 16) & 0xffff;
     }
 
-    private int GetWidthWin32(HWND hwnd)
+    private static int GetWidthWin32(HWND hwnd)
     {
-        //Get the width
         PInvoke.GetWindowRect(hwnd, out RECT rc);
         return rc.right - rc.left;
     }
 
-    private int GetHeightWin32(HWND hwnd)
+    private static int GetHeightWin32(HWND hwnd)
     {
-        //Get the width
         PInvoke.GetWindowRect(hwnd, out RECT rc);
         return rc.bottom - rc.top;
     }
 
-    private void SetWindowSizeWin32(HWND hwnd, int width, int height)
+    private static void SetWindowSizeWin32(HWND hwnd, int width, int height)
     {
         PInvoke.SetWindowPos(hwnd, SPECIAL_WINDOW_HANDLES.HWND_TOP,
-                                    0, 0, width, height,
-                                    SET_WINDOW_POS_FLAGS.SWP_NOMOVE |
-                                    SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE);
+            0, 0, width, height,
+            SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE);
     }
 
-    private WindowPosition GetWindowPositionWin32(HWND hwnd)
+    private static WindowPosition GetWindowPositionWin32(HWND hwnd)
     {
         PInvoke.GetWindowRect(hwnd, out RECT rc);
         return new WindowPosition(rc.top, rc.left);
     }
 
-    private void SetWindowWidthWin32(HWND hwnd, int width)
+    private static void SetWindowWidthWin32(HWND hwnd, int width)
     {
         int currentHeightInPixels = GetHeightWin32(hwnd);
 
         PInvoke.SetWindowPos(hwnd, SPECIAL_WINDOW_HANDLES.HWND_TOP,
-                                    0, 0, width, currentHeightInPixels,
-                                    SET_WINDOW_POS_FLAGS.SWP_NOMOVE |
-                                    SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE);
+            0, 0, width, currentHeightInPixels,
+            SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE);
     }
 
-    private void SetWindowHeightWin32(HWND hwnd, int height)
+    private static void SetWindowHeightWin32(HWND hwnd, int height)
     {
         int currentWidthInPixels = GetWidthWin32(hwnd);
 
         PInvoke.SetWindowPos(hwnd, SPECIAL_WINDOW_HANDLES.HWND_TOP,
-                                    0, 0, currentWidthInPixels, height,
-                                    SET_WINDOW_POS_FLAGS.SWP_NOMOVE |
-                                    SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE);
+            0, 0, currentWidthInPixels, height,
+            SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE);
     }
 
-    private void PlacementTopLefWindowInMonitorWin32(HWND hwnd)
+    private void PlacementTopLeftWindowInMonitorWin32(HWND hwnd)
     {
         var displayInfo = DisplayInformation.GetDisplay(hwnd);
         SetWindowPlacementWin32(hwnd, displayInfo.WorkArea.top, displayInfo.WorkArea.left);
     }
-    private void PlacementBottomLefWindowInMonitorWin32(HWND hwnd)
+    private void PlacementBottomLeftWindowInMonitorWin32(HWND hwnd)
     {
         var displayInfo = DisplayInformation.GetDisplay(hwnd);
         SetWindowPlacementWin32(hwnd, displayInfo.WorkArea.bottom - GetHeightWin32(_hwnd), displayInfo.WorkArea.left);
     }
 
-
-    private void SetWindowPlacementWin32(HWND hwnd, int top, int left)
+    private static void SetWindowPlacementWin32(HWND hwnd, int top, int left)
     {
         PInvoke.SetWindowPos(hwnd, SPECIAL_WINDOW_HANDLES.HWND_TOP,
             left, top, 0, 0,
@@ -510,7 +409,7 @@ public class DesktopWindow : Window
             SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE);
     }
 
-    private void PlacementCenterWindowInMonitorWin32(HWND hwnd)
+    private static void PlacementCenterWindowInMonitorWin32(HWND hwnd)
     {
         PInvoke.GetWindowRect(hwnd, out RECT rc);
         ClipOrCenterRectToMonitorWin32(ref rc, true, true);
@@ -521,20 +420,19 @@ public class DesktopWindow : Window
             SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE);
     }
 
-    private void ClipOrCenterRectToMonitorWin32(ref RECT prc, bool UseWorkArea, bool IsCenter)
+    private static void ClipOrCenterRectToMonitorWin32(ref RECT prc, bool UseWorkArea, bool IsCenter)
     {
-        RECT rc;
         int w = prc.right - prc.left;
         int h = prc.bottom - prc.top;
 
         HMONITOR hMonitor = PInvoke.MonitorFromRect(in prc, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
         
-        MONITORINFO mi = new MONITORINFO();
+        MONITORINFO mi = new();
         mi.cbSize = (uint)Marshal.SizeOf(mi);
 
         PInvoke.GetMonitorInfo(hMonitor, ref mi);
 
-        rc = UseWorkArea ? mi.rcWork : mi.rcMonitor;
+        RECT rc = UseWorkArea ? mi.rcWork : mi.rcMonitor;
 
         if (IsCenter)
         {
