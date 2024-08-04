@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "HttpCrawler (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "HttpCrawler (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
