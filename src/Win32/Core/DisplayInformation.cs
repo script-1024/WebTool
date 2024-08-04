@@ -6,7 +6,7 @@ using Windows.Win32.UI.HiDpi;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 
-namespace HttpCrawler.Core;
+namespace Windows.Win32.Core;
 
 public class DisplayInfo
 {

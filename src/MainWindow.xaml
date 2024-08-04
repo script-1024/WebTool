@@ -4,7 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
-    xmlns:core="using:HttpCrawler.Core">
+    xmlns:core="using:Windows.Win32.Core">
 
     <Grid x:Name="RootGrid">
         <Grid.RowDefinitions>
