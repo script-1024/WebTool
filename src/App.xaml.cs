@@ -1,4 +1,5 @@
 ﻿using Microsoft.UI.Xaml;
+using Windows.Storage;
 
 namespace HttpCrawler
 {
@@ -14,18 +15,37 @@ namespace HttpCrawler
         public App()
         {
             this.InitializeComponent();
+
+            // 还原应用设置
+            ElementTheme = (ElementTheme)(ApplicationData.Current.LocalSettings.Values["RequestedTheme"] ?? 0);
         }
 
         /// <summary>
         /// Invoked when the application is launched.
         /// </summary>
-        /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             m_window = new MainWindow();
             m_window.Activate();
+
+            // 手动广播事件，更新窗口主题
+            OnThemeChanged?.Invoke(m_theme);
         }
 
         private Window m_window;
+        private static ElementTheme m_theme;
+
+        public delegate void ThemeChanged(ElementTheme theme);
+        public static event ThemeChanged OnThemeChanged;
+        public static ElementTheme ElementTheme
+        {
+            get => m_theme;
+            set
+            {
+                m_theme = value;
+                ApplicationData.Current.LocalSettings.Values["RequestedTheme"] = (int)value;
+                OnThemeChanged?.Invoke(value);
+            }
+        }
     }
 }

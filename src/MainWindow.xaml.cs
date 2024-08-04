@@ -25,6 +25,7 @@ namespace HttpCrawler
             // 外观样式
             this.ExtendsContentIntoTitleBar = true;
             this.SystemBackdrop = new MicaBackdrop();
+            App.OnThemeChanged += (theme) => RootGrid.RequestedTheme = theme;
 
             // 导航控件
             Navi.ItemInvoked += Navi_ItemInvoked;
