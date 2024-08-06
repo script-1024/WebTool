@@ -52,7 +52,7 @@ namespace HttpCrawler
                 switch (invokedItem.Tag)
                 {
                     case "HttpRequest":
-                        ContentFrame.Navigate(typeof(HttpRequestPage));
+                        ContentFrame.Navigate(typeof(HttpRequestPage), this);
                         break;
                     default:
                         break;
