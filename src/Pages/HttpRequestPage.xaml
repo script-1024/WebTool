@@ -3,9 +3,39 @@
     x:Class="HttpCrawler.Pages.HttpRequestPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ctrl="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     NavigationCacheMode="Required">
 
-    <Grid>
+    <StackPanel x:Name="RootPanel" Padding="24" HorizontalAlignment="Left">
+        <StackPanel Orientation="Horizontal">
 
-    </Grid>
+            <ctrl:Segmented x:Name="ModeSwitcher" SelectedIndex="0" Grid.Column="0">
+                <ctrl:SegmentedItem Content="GET" Foreground="#0099FF" Icon="{ui:FontIcon Glyph=&#xE2B3;}"/>
+                <ctrl:SegmentedItem Content="POST" Foreground="#009966" Icon="{ui:FontIcon Glyph=&#xE2B4;}"/>
+            </ctrl:Segmented>
+
+            <Button Content="發送請求" Grid.Column="1" Margin="16,0,0,0"
+                    Click="RequestButton_Click"
+                    Style="{StaticResource AccentButtonStyle}"/>
+        </StackPanel>
+
+        <StackPanel x:Name="UriPanel" Orientation="Horizontal">
+            <TextBox
+                x:Name="UriTextBox" Header="目標網址"
+                Width="480" Margin="0, 12, 0, 12"
+                ui:TextBoxExtensions.Regex="^http(s?)://([a-z]+\.)+[a-z]+"/>
+
+            <StackPanel
+                Margin="16, 0, 0, 16" Orientation="Horizontal" VerticalAlignment="Bottom"
+                Visibility="{Binding (ui:TextBoxExtensions.IsValid), ElementName=UriTextBox}">
+                <FontIcon Glyph="&#xE930;" Foreground="Green"/>
+                <TextBlock Text="格式正確" Foreground="Green" Margin="2, 0, 0, 2"/>
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel x:Name="ArgsPanel" Orientation="Horizontal" Visibility="Collapsed">
+            <TextBox x:Name="RequestArgsTextBox" Header="請求參數" AcceptsReturn="True" Width="480"/>
+        </StackPanel>
+    </StackPanel>
 </Page>

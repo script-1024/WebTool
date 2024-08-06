@@ -22,7 +22,7 @@
             OpenPaneLength="200">
 
             <NavigationView.MenuItems>
-                <NavigationViewItem Content="網路請求" Tag="HttpRequest"  Icon="{ui:FontIcon Glyph=&#xE8F3;}"/>
+                <NavigationViewItem Content="網路請求" Tag="HttpRequest" Icon="{ui:FontIcon Glyph=&#xE8F3;}"/>
             </NavigationView.MenuItems>
 
             <Frame x:Name="ContentFrame"/>
