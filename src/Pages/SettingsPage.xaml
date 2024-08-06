@@ -3,8 +3,8 @@
     x:Class="HttpCrawler.Pages.SettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:ctrl="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     NavigationCacheMode="Required">
 
     <StackPanel x:Name="RootPanel" Padding="24">
