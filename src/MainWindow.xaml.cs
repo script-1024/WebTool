@@ -29,7 +29,7 @@ namespace HttpCrawler
             App.OnThemeChanged += (theme) => RootGrid.RequestedTheme = theme;
 
             // 导航控件
-            Navi.ItemInvoked += Navi_ItemInvoked;
+            Navi.SelectionChanged += Navi_SelectionChanged;
             Navi.Loaded += (_, _) =>
             {
                 Navi.SelectedItem = Navi.MenuItems[0];
@@ -41,14 +41,14 @@ namespace HttpCrawler
         /// <summary>
         /// 导航列准备切换视图
         /// </summary>
-        private void Navi_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+        private void Navi_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             // 导航到设置页
-            if (args.IsSettingsInvoked) ContentFrame.Navigate(typeof(SettingsPage));
+            if (args.IsSettingsSelected) ContentFrame.Navigate(typeof(SettingsPage));
             else
             {
                 // 依据被点击选项卡决定被导航页面
-                var invokedItem = args.InvokedItemContainer as NavigationViewItem;
+                var invokedItem = args.SelectedItemContainer as NavigationViewItem;
                 switch (invokedItem.Tag)
                 {
                     case "HttpRequest":
