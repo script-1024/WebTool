@@ -9,7 +9,6 @@
 
     <StackPanel x:Name="RootPanel" Padding="24" HorizontalAlignment="Left">
         <StackPanel Orientation="Horizontal">
-
             <ctrl:Segmented x:Name="ModeSwitcher" SelectedIndex="0" Grid.Column="0">
                 <ctrl:SegmentedItem Content="GET" Foreground="#0099FF" Icon="{ui:FontIcon Glyph=&#xE2B3;}"/>
                 <ctrl:SegmentedItem Content="POST" Foreground="#009966" Icon="{ui:FontIcon Glyph=&#xE2B4;}"/>
@@ -18,13 +17,16 @@
             <Button Content="發送請求" Grid.Column="1" Margin="16,0,0,0"
                     Click="RequestButton_Click"
                     Style="{StaticResource AccentButtonStyle}"/>
+
+            <ProgressRing x:Name="RequestProgressRing" IsActive="False" Margin="16,0,0,0"/>
         </StackPanel>
 
         <StackPanel x:Name="UriPanel" Orientation="Horizontal">
             <TextBox
                 x:Name="UriTextBox" Header="目標網址"
-                Width="480" Margin="0, 12, 0, 12"
-                ui:TextBoxExtensions.Regex="^http(s?)://([a-z]+\.)+[a-z]+"/>
+                Width="480" Margin="0, 12, 0, 12" IsSpellCheckEnabled="False"
+                ui:TextBoxExtensions.Regex=
+                "^((?:25[0-5]\.|2[0-4]\d\.|[01]?\d\d?\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(:(\d\d?\d?\d?|[0-5]\d\d\d\d|6[0-4]\d\d\d|65[0-4]\d\d|655[0-2]\d|6553[0-5]))?$|http(s?)://([a-z]+\.)+[a-z]+)"/>
 
             <StackPanel
                 Margin="16, 0, 0, 16" Orientation="Horizontal" VerticalAlignment="Bottom"
@@ -35,7 +37,10 @@
         </StackPanel>
 
         <StackPanel x:Name="ArgsPanel" Orientation="Horizontal" Visibility="Collapsed">
-            <TextBox x:Name="RequestArgsTextBox" Header="請求參數" AcceptsReturn="True" Width="480"/>
+            <TextBox
+                x:Name="RequestArgsTextBox" Header="請求參數"
+                AcceptsReturn="True" Width="480"
+                IsSpellCheckEnabled="False"/>
         </StackPanel>
     </StackPanel>
 </Page>
