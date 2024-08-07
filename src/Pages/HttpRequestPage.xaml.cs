@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Web;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Win32.Core;
 using HttpCrawler.Lib;
 
@@ -16,6 +16,7 @@ namespace HttpCrawler.Pages;
 public sealed partial class HttpRequestPage : Page
 {
     private readonly HttpClient httpClient = new();
+    private bool hasRequestTask = false;
     private DesktopWindow dwInstance;
 
     public HttpRequestPage()
@@ -44,7 +45,7 @@ public sealed partial class HttpRequestPage : Page
 
     private void RootPanel_Loaded(object sender, RoutedEventArgs e)
     {
-        // 操作 `ArgsPanel` 的属性必须在对象实例化后再进行，避免 NRE
+        // 操作属性必须在对象实例化后再进行，避免 NRE
         ModeSwitcher.SelectionChanged += ModeSwitcher_SelectionChanged;
     }
 
@@ -59,8 +60,31 @@ public sealed partial class HttpRequestPage : Page
 
     private async void RequestButton_Click(object sender, RoutedEventArgs e)
     {
+        // 防止重复呼叫
+        if (hasRequestTask) return;
+        else hasRequestTask = true;
+
         var uri = UriTextBox.Text.Trim();
         var args = RequestArgsTextBox.Text.Trim();
+
+        if (CorrectFormatTipPanel.Visibility == Visibility.Collapsed)
+        {
+            // URI 未通过正则检查
+            Tip.Title = "無效請求";
+            Tip.Content = "指定的 URI 內容為空或格式錯誤";
+            Tip.IsOpen = true;
+            hasRequestTask = false;
+            return;
+        }
+        else if (ModeSwitcher.SelectedIndex == 1 && args == "")
+        {
+            // 请求参数为空
+            Tip.Title = "無效請求";
+            Tip.Content = "未提供請求參數";
+            Tip.IsOpen = true;
+            hasRequestTask = false;
+            return;
+        }
 
         // 开始转圈展示等待动画
         RequestProgressRing.IsActive = true;
@@ -80,84 +104,113 @@ public sealed partial class HttpRequestPage : Page
 
         UriTextBox.Text = uri;
         RequestArgsTextBox.Text = args;
+        hasRequestTask = false;
     }
 
     private async Task GetAsync(string uri)
     {
-        // 对话框
-        var dialog = new ContentDialog()
-        {
-            XamlRoot = this.XamlRoot,
-            CloseButtonText = "確認",
-            Title = "網頁回應"
-        };
+        HttpRequestMessage msg;
 
         try
         {
-            // 访问失败时会抛出异常
-            HttpRequestMessage msg = new()
+            msg = new()
             {
                 Method = HttpMethod.Get,
                 RequestUri = new Uri(uri)
             };
-
-            var response = await httpClient.SendAsync(msg);
-            var responseBody = await response.Content.ReadAsStringAsync();
-            dialog.Content = responseBody;
         }
-        catch (Exception e)
+        catch (UriFormatException)
         {
-            dialog.Content =
-                $"存取指定 Uri 時發生錯誤\n{e.Message}\n" +
-                "\n== 呼叫堆疊 ==\n" +
-                $"{e.StackTrace}";
+            // URI 对象建立失败
+            RequestProgressRing.IsActive = false;
+            Tip.Title = "無效請求";
+            Tip.Content = "指定 URI 不可用";
+            Tip.IsOpen = true;
+            return;
         }
 
-        RequestProgressRing.IsActive = false;
-        await dialog.ShowAsync();
+        if (msg is not null) await SendMsgAsync(msg);
     }
 
     private async Task PostAsync(string uri, string contentBody)
     {
-        // 对话框
-        var dialog = new ContentDialog()
+        if (!JsonHelper.IsJsonStringValid(contentBody))
         {
-            XamlRoot = this.XamlRoot,
-            CloseButtonText = "確認",
-            Title = "網頁回應"
-        };
-
-        if (!Helpers.IsJsonStringValid(contentBody))
-        {
-            dialog.Content = $"預期一個JSON物件，但收到\n`{contentBody}`";
             RequestProgressRing.IsActive = false;
-            await dialog.ShowAsync();
+            Tip.Title = "無效請求";
+            Tip.Content = "預期一個 JSON 物件，但收到錯誤格式";
+            Tip.IsOpen = true;
             return;
         }
 
+        HttpRequestMessage msg;
+
         try
         {
-            // 访问失败时会抛出异常
-            HttpRequestMessage msg = new()
+            msg = new()
             {
                 Method = HttpMethod.Post,
                 RequestUri = new Uri(uri),
                 Content = new StringContent(contentBody)
             };
+        }
+        catch (UriFormatException)
+        {
+            // URI 对象建立失败
+            RequestProgressRing.IsActive = false;
+            Tip.Title = "無效請求";
+            Tip.Content = "指定 URI 不可用";
+            Tip.IsOpen = true;
+            return;
+        }
 
+        if (msg is not null) await SendMsgAsync(msg);
+    }
+
+    private async Task SendMsgAsync(HttpRequestMessage msg)
+    {
+        // 对话框
+        var dialog = new ContentDialog()
+        {
+            XamlRoot = this.XamlRoot,
+            DefaultButton = ContentDialogButton.Primary,
+            PrimaryButtonText = "複製",
+            CloseButtonText = "關閉",
+            Title = "網頁回應"
+        };
+
+        string responseBody = string.Empty;
+        try
+        {
             var response = await httpClient.SendAsync(msg);
-            var responseBody = await response.Content.ReadAsStringAsync();
-            dialog.Content = responseBody;
+            responseBody = await response.Content.ReadAsStringAsync();
+
+            // 使用 ScrollViewer 显示过长文本
+            dialog.Content = new ScrollViewer()
+            {
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Content = new TextBlock() { Text = responseBody }
+            };
         }
         catch (Exception e)
         {
             dialog.Content =
-                $"存取指定 Uri 時發生錯誤\n{e.Message}\n" +
+                $"存取指定 URI 時發生錯誤\n{e.Message}\n" +
                 "\n== 呼叫堆疊 ==\n" +
                 $"{e.StackTrace}";
         }
 
         RequestProgressRing.IsActive = false;
-        await dialog.ShowAsync();
+        var result = await dialog.ShowAsync();
+
+        if (result == ContentDialogResult.Primary)
+        {
+            var dtPack = new DataPackage();
+            dtPack.SetText(responseBody);
+            Clipboard.SetContent(dtPack);
+            Tip.Title = "操作完成";
+            Tip.Content = "已複製至剪貼板";
+            Tip.IsOpen = true;
+        }
     }
 }
