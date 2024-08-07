@@ -29,7 +29,8 @@
                 "^((?:25[0-5]\.|2[0-4]\d\.|[01]?\d\d?\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(:(\d\d?\d?\d?|[0-5]\d\d\d\d|6[0-4]\d\d\d|65[0-4]\d\d|655[0-2]\d|6553[0-5]))?$|http(s?)://([a-z]+\.)+[a-z]+)"/>
 
             <StackPanel
-                Margin="16, 0, 0, 16" Orientation="Horizontal" VerticalAlignment="Bottom"
+                x:Name="CorrectFormatTipPanel" Margin="16, 0, 0, 16"
+                Orientation="Horizontal" VerticalAlignment="Bottom"
                 Visibility="{Binding (ui:TextBoxExtensions.IsValid), ElementName=UriTextBox}">
                 <FontIcon Glyph="&#xE930;" Foreground="Green"/>
                 <TextBlock Text="格式正確" Foreground="Green" Margin="2, 0, 0, 2"/>
@@ -42,5 +43,7 @@
                 AcceptsReturn="True" Width="480"
                 IsSpellCheckEnabled="False"/>
         </StackPanel>
+
+        <TeachingTip x:Name="Tip" IsLightDismissEnabled="True"/>
     </StackPanel>
 </Page>
