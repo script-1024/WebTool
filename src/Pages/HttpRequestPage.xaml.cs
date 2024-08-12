@@ -17,28 +17,17 @@ public sealed partial class HttpRequestPage : Page
 {
     private readonly HttpClient httpClient = new();
     private bool hasRequestTask = false;
-    private DesktopWindow dwInstance;
 
     public HttpRequestPage()
     {
         this.InitializeComponent();
+        App.MainWindow.Closing += Window_Closing;
         RootPanel.Loaded += RootPanel_Loaded;
     }
 
-    protected override void OnNavigatedTo(NavigationEventArgs e)
+    private void Window_Closing(object sender, WindowClosingEventArgs e)
     {
-        base.OnNavigatedTo(e);
-
-        if (dwInstance is null)
-        {
-            dwInstance = e.Parameter as DesktopWindow;
-            dwInstance.Closing += DwInstance_Closing;
-        }
-    }
-
-    private void DwInstance_Closing(object sender, WindowClosingEventArgs e)
-    {
-        dwInstance.Closing -= DwInstance_Closing;
+        App.MainWindow.Closing -= Window_Closing;
         httpClient.Dispose(); // 销毁对象释放内存
         e.TryCancel();
     }
