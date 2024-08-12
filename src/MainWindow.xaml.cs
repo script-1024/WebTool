@@ -47,12 +47,15 @@ namespace HttpCrawler
             if (args.IsSettingsSelected) ContentFrame.Navigate(typeof(SettingsPage));
             else
             {
-                // 依据被点击选项卡决定被导航页面
+                // 依据选中项决定被导航页面
                 var invokedItem = args.SelectedItemContainer as NavigationViewItem;
                 switch (invokedItem.Tag)
                 {
-                    case "HttpRequest":
-                        ContentFrame.Navigate(typeof(HttpRequestPage), this);
+                    case "HttpReq":
+                        ContentFrame.Navigate(typeof(HttpRequestPage));
+                        break;
+                    case "AutoOps":
+                        ContentFrame.Navigate(typeof(AutomaticOperationsPage));
                         break;
                     default:
                         break;

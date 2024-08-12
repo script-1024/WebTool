@@ -21,8 +21,17 @@
             IsBackButtonVisible="Collapsed"
             OpenPaneLength="200">
 
+            <NavigationView.Resources>
+                <ResourceDictionary x:Key="Default">
+                    <Style TargetType="FontIcon">
+                        <Setter Property="FontFamily" Value="Segoe Fluent Icons"/>
+                    </Style>
+                </ResourceDictionary>
+            </NavigationView.Resources>
+
             <NavigationView.MenuItems>
-                <NavigationViewItem Content="網路請求" Tag="HttpRequest" Icon="{ui:FontIcon Glyph=&#xE8F3;}"/>
+                <NavigationViewItem Content="網路請求" Tag="HttpReq" Icon="{ui:FontIcon FontFamily='Segoe Fluent Icons', Glyph=&#xE8F3;}"/>
+                <NavigationViewItem Content="自動操作" Tag="AutoOps" Icon="{ui:FontIcon FontFamily='Segoe Fluent Icons', Glyph=&#xE794;}"/>
             </NavigationView.MenuItems>
 
             <Frame x:Name="ContentFrame"/>

@@ -13,6 +13,7 @@
     <EnableMsixTooling>true</EnableMsixTooling>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Pages\AutomaticOperationsPage.xaml" />
     <None Remove="Pages\HttpRequestPage.xaml" />
     <None Remove="Pages\SettingsPage.xaml" />
   </ItemGroup>
