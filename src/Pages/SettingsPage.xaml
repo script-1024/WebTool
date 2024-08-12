@@ -20,13 +20,25 @@
 
         <ctrl:SettingsCard
             Header="顏色主題"
-            Description="更改應用程式的主題"
+            Description="更改應用程式的主題色彩"
             HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
 
-            <ComboBox x:Name="SC0_ThemeComboBox" SelectedIndex="0">
+            <ComboBox x:Name="SC0_ThemeColorComboBox" SelectedIndex="0">
                 <ComboBoxItem Content="跟隨系統"/>
                 <ComboBoxItem Content="淺色"/>
                 <ComboBoxItem Content="深色"/> 
+            </ComboBox>
+        </ctrl:SettingsCard>
+
+        <ctrl:SettingsCard
+            Header="背景材質"
+            Description="更改應用程式的背景材質"
+            HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
+
+            <ComboBox x:Name="SC1_ThemeBackdropComboBox" SelectedIndex="0">
+                <ComboBoxItem Content="雲母"/>
+                <ComboBoxItem Content="雲母變種"/>
+                <ComboBoxItem Content="壓克力"/>
             </ComboBox>
         </ctrl:SettingsCard>
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
 using Windows.Storage;
 
 namespace HttpCrawler
@@ -53,5 +54,9 @@ namespace HttpCrawler
         {
             get => (m_window is null || m_window is not MainWindow mainWindow) ? null : mainWindow;
         }
+
+        public static readonly MicaBackdrop MicaBackdrop = new();
+        public static readonly MicaBackdrop MicaAltBackdrop = new() { Kind = Microsoft.UI.Composition.SystemBackdrops.MicaKind.BaseAlt };
+        public static readonly DesktopAcrylicBackdrop AcrylicBackdrop = new();
     }
 }
