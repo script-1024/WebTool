@@ -32,7 +32,7 @@ namespace HttpCrawler
             OnThemeChanged?.Invoke(m_theme);
         }
 
-        private Window m_window;
+        private static Window m_window;
         private static ElementTheme m_theme;
 
         public delegate void ThemeChanged(ElementTheme theme);
@@ -46,6 +46,12 @@ namespace HttpCrawler
                 ApplicationData.Current.LocalSettings.Values["RequestedTheme"] = (int)value;
                 OnThemeChanged?.Invoke(value);
             }
+        }
+
+        public static new App Current { get => Application.Current as App; }
+        public static MainWindow MainWindow
+        {
+            get => (m_window is null || m_window is not MainWindow mainWindow) ? null : mainWindow;
         }
     }
 }
