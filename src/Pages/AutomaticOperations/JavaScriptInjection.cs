@@ -12,7 +12,6 @@ public sealed partial class AutomaticOperationsPage
     {
         public string Type { get; set; }
         public JsonDocument Data { get; set; }
-        public bool IsMessageLogged { get; set; }
     }
 
     private async void WebView_NavigationCompletedAsync(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
