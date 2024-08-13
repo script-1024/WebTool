@@ -6,6 +6,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using System.Text;
 using System.Web;
+using HttpCrawler.Lib;
+using Microsoft.UI.Xaml;
 
 namespace HttpCrawler.Pages
 {
@@ -24,6 +26,12 @@ namespace HttpCrawler.Pages
             GoBackButton.Click += (_, _) => WebView.GoBack();
             GoForwardButton.Click += (_, _) => WebView.GoForward();
             ReloadButton.Click += (_, _) => WebView.Reload();
+            OpenPanelButton.Click += (_, _) =>
+            {
+                var visible = (bool)OpenPanelButton.IsChecked;
+                Splitter.Visibility = AdvancedPanel.SetVisibility(visible);
+                if (!visible) RootGrid.ColumnDefinitions[1].Width = new(); // 重置宽度
+            };
         }
 
         private bool _isUpdateDisabled = false;
@@ -67,9 +75,16 @@ namespace HttpCrawler.Pages
             (ReloadButton.Icon as FontIcon).Glyph = "\uE72C"; // `Reload` icon
 
             // 注入 JavaScript 用于捕捉鼠标移动，返回一个 C# Point 结构体
-            string script = @"document.addEventListener('mousemove', function(e) {
-                window.chrome.webview.postMessage({X: e.clientX, Y: e.clientY});
-            });";
+            string script = @"
+                var logHelper = {
+                    logEvent: false
+                }
+
+                document.addEventListener('mousemove', function(e) {
+                    window.chrome.webview.postMessage({X: e.clientX, Y: e.clientY});
+                    if (logHelper.logEvent === true) console.log(e);
+                });
+            ";
 
             await WebView.ExecuteScriptAsync(script);
 

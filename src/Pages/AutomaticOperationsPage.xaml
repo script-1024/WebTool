@@ -7,16 +7,21 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     NavigationCacheMode="Required">
 
-    <Grid>
+    <Grid x:Name="RootGrid" CornerRadius="6, 0, 0, 0" BorderThickness="1, 1, 0, 0"
+          BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="36"/>
         </Grid.RowDefinitions>
-        
-        <Grid Grid.Row="0" CornerRadius="4, 0, 0, 0" BorderThickness="1"
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0, 0, 0, 1"
               Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
-              BorderBrush="{ThemeResource ControlElevationBorderBrush}">
+              BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
@@ -29,14 +34,28 @@
             <AppBarButton x:Name="GoForwardButton" Grid.Column="1" Icon="{ui:FontIcon Glyph=&#xE72A;}" CornerRadius="20" Width="40" Margin="4, 1, 0, -15" IsCompact="True" IsEnabled="False"/>
             <AppBarButton x:Name="ReloadButton" Grid.Column="2" Icon="{ui:FontIcon Glyph=&#xE72C;}" CornerRadius="20" Width="40" Margin="4, 1, 0, -15" IsCompact="True"/>
             <TextBox x:Name="UriTextBox" Grid.Column="3" CornerRadius="15" Margin="8, 1, 4, 1" VerticalAlignment="Center"/>
-            <AppBarButton x:Name="MenuButton" Grid.Column="4" Icon="{ui:FontIcon Glyph=&#xE712;}" CornerRadius="20" Width="40" Margin="4, 1, 4, -15" IsCompact="True"/>
+            <AppBarToggleButton x:Name="OpenPanelButton" Grid.Column="4" Icon="{ui:FontIcon Glyph=&#xE712;}" CornerRadius="20" Width="40" Margin="4, 1, 4, -15" IsCompact="True"/>
         </Grid>
+        
+        <WebView2 x:Name="WebView" Grid.Row="1" Grid.Column="0" Source="about:blank"/>
 
-        <WebView2 x:Name="WebView" Grid.Row="1" Source="about:blank"/>
+        <StackPanel x:Name="AdvancedPanel" Grid.Row="1" Grid.Column="1"
+                    Visibility="Collapsed" MinWidth="180" BorderThickness="1, 0, 0, 0"
+                    Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}"
+                    BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}">
+            
+        </StackPanel>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" BorderThickness="0, 1, 0, 0"
+        <ctrl:GridSplitter x:Name="Splitter" Grid.Row="1" Grid.Column="1" Visibility="Collapsed"
+                           HorizontalAlignment="Left" ResizeDirection="Auto">
+            <ctrl:GridSplitter.RenderTransform>
+                <TranslateTransform X="-12" />
+            </ctrl:GridSplitter.RenderTransform>
+        </ctrl:GridSplitter>
+
+        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" BorderThickness="0, 1, 0, 0"
                     Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}">
+                    BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}">
             <FontIcon Margin="8, 0, 8, 0" FontSize="16" Glyph="&#xE8B0;" VerticalAlignment="Center"/>
             <TextBlock x:Name="CursorPositionTextBlock" Text="0, 0" VerticalAlignment="Center"/>
         </StackPanel>

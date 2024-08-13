@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Windows.UI;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
 
 namespace HttpCrawler.Lib;
 
@@ -69,5 +72,16 @@ public static class ColorHelper
         }
 
         return new() { A = a, R = r, G = g, B = b };
+    }
+}
+
+public static class UIHelper
+{
+    public static Visibility SetVisibility(this UIElement uiElement, bool value)
+    {
+        return uiElement.Visibility = value switch {
+            true => Visibility.Visible,
+            false => Visibility.Collapsed
+        };
     }
 }
