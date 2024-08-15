@@ -5,7 +5,7 @@
 
 #? User defined
 Properties/launchSettings.json
-res/*/local_only
+local_only/
 
 # User-specific files
 *.rsuser
