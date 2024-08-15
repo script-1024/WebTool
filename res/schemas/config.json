@@ -1,0 +1,42 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$comment": "此文件用于为 github: script-1024/WebTool 提供配置文件的格式检查和代码补全",
+    "type": "object",
+    "required": [
+        "version",
+        "id"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "format": "uri"
+        },
+        "version": {
+            "type": "integer",
+            "description": "配置文件的版本号",
+            "minimum": 1,
+            "default": 1
+        },
+        "id": {
+            "type": "string",
+            "description": "配置文件的标识符",
+            "minLength": 1
+        },
+        "default_uri": {
+            "type": "string",
+            "description": "浏览器的预设网址",
+            "pattern": "^http(s?)://([a-zA-Z0-9-]+\\.)+[a-zA-Z0-9-]+(/.*)?$"
+        },
+        "scripts": {
+            "type": "array",
+            "description": "要注入的脚本来源",
+            "items": {
+                "type": "string"
+            }
+        },
+        "controls": {
+            "$ref": "https://raw.githubusercontent.com/script-1024/WebTool/main/res/schemas/controls.json"
+        }
+    }
+}

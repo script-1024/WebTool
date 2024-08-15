@@ -1,0 +1,376 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$comment": "此文件用于为 github: script-1024/WebTool 提供配置文件的格式检查和代码补全",
+    "type": "array",
+    "description": "包含的所有控件",
+    "minItems": 1,
+    "definitions": {
+        "thickness": {
+            "default": 0,
+            "anyOf": [
+                {
+                    "type": "number",
+                    "default": 0
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "minItems": 2,
+                    "maxItems": 4
+                }
+            ],
+            "not": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3
+            }
+        },
+        "value_provider": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "required": [
+                        "source"
+                    ],
+                    "properties": {
+                        "source": {
+                            "description": "来源",
+                            "enum": [
+                                "inputbox",
+                                "checkbox",
+                                "random",
+                                "fixed"
+                            ]
+                        }
+                    },
+                    "oneOf": [
+                        {
+                            "properties": {
+                                "source": false,
+                                "name": false,
+                                "min": false,
+                                "max": false,
+                                "value": false
+                            }
+                        },
+                        {
+                            "required": [
+                                "name"
+                            ],
+                            "properties": {
+                                "source": {
+                                    "const": "inputbox",
+                                    "description": "输入框"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "控件名称"
+                                }
+                            }
+                        },
+                        {
+                            "required": [
+                                "name"
+                            ],
+                            "properties": {
+                                "source": {
+                                    "const": "checkbox",
+                                    "description": "勾选框"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "控件名称"
+                                }
+                            }
+                        },
+                        {
+                            "required": [
+                                "min",
+                                "max"
+                            ],
+                            "properties": {
+                                "source": {
+                                    "const": "random",
+                                    "description": "随机数"
+                                },
+                                "min": {
+                                    "type": "number",
+                                    "description": "最小值"
+                                },
+                                "max": {
+                                    "type": "number",
+                                    "description": "最大值"
+                                }
+                            }
+                        },
+                        {
+                            "required": [
+                                "value"
+                            ],
+                            "properties": {
+                                "source": {
+                                    "const": "fixed",
+                                    "description": "固定值"
+                                },
+                                "value": {
+                                    "description": "字面量"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "string",
+                    "description": "字符串"
+                },
+                {
+                    "type": "number",
+                    "description": "数值"
+                }
+            ]
+        },
+        "any": {
+            "required": [
+                "type",
+                "name"
+            ],
+            "properties": {
+                "type": {
+                    "description": "控件类型",
+                    "enum": [
+                        "label",
+                        "button",
+                        "panel",
+                        "inputbox",
+                        "checkbox"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "description": "唯一的控件名称，用于查找对象",
+                    "minLength": 1
+                },
+                "margin": {
+                    "description": "控件外边距，可以是数值或元组",
+                    "$ref": "#/definitions/thickness"
+                },
+                "visible": {
+                    "type": "boolean",
+                    "description": "控件可见性",
+                    "default": true
+                },
+                "enable": {
+                    "type": "boolean",
+                    "description": "控件可用性",
+                    "default": true
+                },
+                "font_size": {
+                    "type": "integer",
+                    "description": "字体大小",
+                    "default": 16,
+                    "minimum": 12,
+                    "maximum": 36
+                }
+            }
+        },
+        "label": {
+            "properties": {
+                "type": {
+                    "const": "label",
+                    "description": "文本标签"
+                },
+                "text": {
+                    "type": "string",
+                    "description": "标签内容"
+                }
+            }
+        },
+        "button": {
+            "properties": {
+                "type": {
+                    "const": "button",
+                    "description": "按钮"
+                },
+                "text": {
+                    "type": "string",
+                    "description": "按钮文本"
+                },
+                "action": {
+                    "type": "object",
+                    "description": "按钮被点击的行为",
+                    "required": [
+                        "type"
+                    ],
+                    "properties": {
+                        "type": {
+                            "description": "行为类型",
+                            "enum": [
+                                "call_function",
+                                "change_value",
+                                "execute_script"
+                            ]
+                        }
+                    },
+                    "oneOf": [
+                        {
+                            "properties": {
+                                "type": false,
+                                "function": false,
+                                "args": false,
+                                "target": false,
+                                "script": false
+                            }
+                        },
+                        {
+                            "required": [
+                                "function"
+                            ],
+                            "properties": {
+                                "type": {
+                                    "const": "call_function",
+                                    "description": "呼叫函数"
+                                },
+                                "function": {
+                                    "type": "string",
+                                    "description": "待呼叫的 javascript 函数名",
+                                    "minLength": 1
+                                },
+                                "args": {
+                                    "type": "array",
+                                    "description": "传递给函数的参数",
+                                    "minItems": 1,
+                                    "items": {
+                                        "$ref": "#/definitions/value_provider"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "required": [
+                                "target"
+                            ],
+                            "properties": {
+                                "type": {
+                                    "const": "change_value",
+                                    "description": "修改数值"
+                                },
+                                "target": {
+                                    "type": "string",
+                                    "description": "目标控件名称"
+                                },
+                                "property": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            }
+                        },
+                        {
+                            "required": [
+                                "script"
+                            ],
+                            "properties": {
+                                "type": {
+                                    "const": "execute_script",
+                                    "description": "执行脚本代码"
+                                },
+                                "script": {
+                                    "type": "string",
+                                    "description": "可供执行的 javascript 代码"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "panel": {
+            "properties": {
+                "type": {
+                    "const": "panel",
+                    "description": "面板"
+                },
+                "orientation": {
+                    "description": "控件放置方向",
+                    "default": "vertical",
+                    "enum": [
+                        "vertical",
+                        "horizontal"
+                    ]
+                },
+                "padding": {
+                    "description": "容器内边距，可以是数值或元组",
+                    "$ref": "#/definitions/thickness"
+                },
+                "children": {
+                    "$ref": "#"
+                }
+            }
+        },
+        "inputbox": {
+            "properties": {
+                "type": {
+                    "const": "inputbox",
+                    "description": "输入框"
+                },
+                "header": {
+                    "type": "string",
+                    "description": "输入框标题"
+                },
+                "placeholder": {
+                    "type": "string",
+                    "description": "输入框提示文本"
+                },
+                "content": {
+                    "type": "string",
+                    "description": "输入框内容值"
+                },
+                "action_button": {
+                    "$ref": "#/definitions/button",
+                    "description": "输入框的动作按钮"
+                }
+            }
+        },
+        "checkbox": {
+            "properties": {
+                "type": {
+                    "const": "checkbox",
+                    "description": "勾选框"
+                },
+                "text": {
+                    "type": "string",
+                    "description": "勾选框文本"
+                },
+                "checked": {
+                    "type": "boolean",
+                    "description": "勾选框是否选中",
+                    "default": false
+                }
+            }
+        }
+    },
+    "items": {
+        "type": "object",
+        "$ref": "#/definitions/any",
+        "anyOf": [
+            {
+                "$ref": "#/definitions/label"
+            },
+            {
+                "$ref": "#/definitions/button"
+            },
+            {
+                "$ref": "#/definitions/panel"
+            },
+            {
+                "$ref": "#/definitions/inputbox"
+            },
+            {
+                "$ref": "#/definitions/checkbox"
+            }
+        ]
+    }
+}
