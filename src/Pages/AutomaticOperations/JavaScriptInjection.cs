@@ -4,7 +4,7 @@ using Windows.Foundation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 
-namespace HttpCrawler.Pages;
+namespace WebTool.Pages;
 
 public sealed partial class AutomaticOperationsPage
 {
@@ -23,28 +23,19 @@ public sealed partial class AutomaticOperationsPage
         // 注入 JavaScript 代码
         // 包含一些实用函数，并检测鼠标移动
         string script = @"
-            var dbgHelper = {logMsg: false, logDownloadReq: false};
+            const dbgHelper = {
+                postMsg: {useWhiteList: false, blockList: ['MouseEvent']}
+            };
 
             function postMessage(type, data) {
-                var msg = {Type: type, Data: data}
-                window.chrome.webview.postMessage(msg);
-                if (dbgHelper.logMsg === true) console.log('PostMessage: ', msg);
+                const msg = {Type: type, Data: data}
+                window.chrome.webview?.postMessage(msg);
+                const useWhiteList = dbgHelper.postMsg.useWhiteList;
+                const inBlockList = (dbgHelper.postMsg.blockList.indexOf(type) > -1);
+                if (!(useWhiteList ^ inBlockList)) console.log('PostMessage: ', msg);
             }
 
-            function download(filename, content) {
-                var link = document.createElement('a');
-                link.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
-                link.setAttribute('download', filename);
-
-                link.style.display = 'none';
-                document.body.appendChild(link);
-
-                link.click();
-                document.body.removeChild(link);
-                if (dbgHelper.logDownloadReq === true) console.log('download: ', filename);
-            }
-
-            document.addEventListener('mousemove', function(e) {
+            document.addEventListener('mousemove', (e) => {
                 postMessage('MouseEvent', {X: e.clientX, Y: e.clientY});
             });";
 
