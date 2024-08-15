@@ -15,7 +15,7 @@
   <mp:PhoneIdentity PhoneProductId="7bf5fd4d-7ec3-477b-a084-61996231ddd3" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>HttpCrawler</DisplayName>
+    <DisplayName>WebTool</DisplayName>
     <PublisherDisplayName>benny</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -34,8 +34,8 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="HttpCrawler"
-        Description="HttpCrawler"
+        DisplayName="WebTool"
+        Description="WebTool"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">

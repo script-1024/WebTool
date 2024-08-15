@@ -2,7 +2,7 @@
 using Microsoft.UI.Xaml.Media;
 using Windows.Storage;
 
-namespace HttpCrawler
+namespace WebTool
 {
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.

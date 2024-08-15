@@ -3,9 +3,9 @@ using System.Web;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
-using HttpCrawler.Lib;
+using WebTool.Lib;
 
-namespace HttpCrawler.Pages
+namespace WebTool.Pages
 {
     /// <summary>
     /// 自动操作页面

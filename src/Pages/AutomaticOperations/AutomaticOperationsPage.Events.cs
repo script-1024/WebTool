@@ -7,7 +7,7 @@ using Windows.Foundation;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 
-namespace HttpCrawler.Pages;
+namespace WebTool.Pages;
 
 public sealed partial class AutomaticOperationsPage
 {

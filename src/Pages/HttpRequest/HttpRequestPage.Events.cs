@@ -2,7 +2,7 @@
 using Microsoft.UI.Xaml.Controls;
 using Windows.Win32.Core;
 
-namespace HttpCrawler.Pages;
+namespace WebTool.Pages;
 
 public sealed partial class HttpRequestPage
 {

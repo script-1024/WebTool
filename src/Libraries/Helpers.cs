@@ -7,7 +7,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
 
-namespace HttpCrawler.Lib;
+namespace WebTool.Lib;
 
 public static class JsonHelper
 {

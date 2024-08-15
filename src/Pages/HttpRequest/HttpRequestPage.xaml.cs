@@ -3,9 +3,9 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
-using HttpCrawler.Lib;
+using WebTool.Lib;
 
-namespace HttpCrawler.Pages;
+namespace WebTool.Pages;
 
 /// <summary>
 /// 网络请求页面

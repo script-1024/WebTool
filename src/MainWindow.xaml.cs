@@ -2,10 +2,10 @@
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 
-using HttpCrawler.Pages;
+using WebTool.Pages;
 using Windows.Win32.Core;
 
-namespace HttpCrawler
+namespace WebTool
 {
     /// <summary>
     /// 应用主窗口

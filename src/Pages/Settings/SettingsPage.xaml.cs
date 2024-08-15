@@ -2,7 +2,7 @@
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 
-namespace HttpCrawler.Pages;
+namespace WebTool.Pages;
 
 /// <summary>
 /// 设置页面

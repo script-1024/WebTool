@@ -1,9 +1,9 @@
 {
   "profiles": {
-    "HttpCrawler (Package)": {
+    "WebTool (Package)": {
       "commandName": "MsixPackage"
     },
-    "HttpCrawler (Unpackaged)": {
+    "WebTool (Unpackaged)": {
       "commandName": "Project"
     }
   }
