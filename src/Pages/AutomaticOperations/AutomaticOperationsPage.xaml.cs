@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using WebTool.Lib;
+using System.Text.RegularExpressions;
 
 namespace WebTool.Pages
 {
@@ -17,7 +18,7 @@ namespace WebTool.Pages
             this.InitializeComponent();
 
             // 订阅浏览器事件
-            SubscribeToWebViewEvents();
+            PrepareWebViewAsync();
 
             // 应用主题更新事件
             App.ThemeChanged += App_ThemeChanged;
@@ -40,7 +41,7 @@ namespace WebTool.Pages
             };
         }
 
-        private async Task SubscribeToWebViewEvents()
+        private async void PrepareWebViewAsync()
         {
             // 浏览器导航事件
             WebView.NavigationStarting += (_, _) => UpdateWebViewNavigationBar();
@@ -50,6 +51,10 @@ namespace WebTool.Pages
             // 必须先确保 CoreWebView2 已实例化
             await WebView.EnsureCoreWebView2Async();
             WebView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
+            WebView.CoreWebView2.Settings.UserAgent =
+               @$"Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+                  AppleWebKit/537.36 (KHTML, like Gecko)
+                  Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0 WebTool/{App.ShortVersion}";
         }
 
         private void UpdateWebViewNavigationBar()
@@ -77,6 +82,12 @@ namespace WebTool.Pages
                 return;
             }
 
+            void fallBackSearchOnGoogle()
+            {
+                var param = HttpUtility.UrlEncode(UriTextBox.Text.Trim());
+                WebView.Source = new Uri($"https://www.google.com/search?q={param}");
+            }
+
             // 尝试浏览到目标网址
             // 若网址格式错误，将其视为关键字从谷歌搜索
             try
@@ -88,18 +99,21 @@ namespace WebTool.Pages
                     userInput = "http://" + userInput;
                 }
 
-                WebView.Source = new Uri(userInput);
+                if (HttpRegex().IsMatch(userInput)) WebView.Source = new Uri(userInput);
+                else fallBackSearchOnGoogle();
             }
             catch (UriFormatException)
             {
-                var param = HttpUtility.UrlEncode(UriTextBox.Text);
-                WebView.Source = new Uri($"https://www.google.com/search?q={param}");
+                fallBackSearchOnGoogle();
             }
         }
 
         #region PrivateFields
 
         private bool isUpdateDisabled = false;
+
+        [GeneratedRegex(@"^http(s?)://([a-zA-Z0-9-]+\.)+[a-zA-Z0-9-]+(/.*)?$")]
+        private static partial Regex HttpRegex();
 
         #endregion
     }
