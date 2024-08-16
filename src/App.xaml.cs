@@ -9,9 +9,14 @@ namespace WebTool
 {
     public partial class App : Application
     {
+        public static readonly string FullVersion = "Beta 1.0 build 0816";
+        public static readonly string ShortVersion = "1.0";
+        public static readonly string Language = "zh-TW";
+
         public App()
         {
             this.InitializeComponent();
+            Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", $"--lang={Language}");
         }
 
         /// <summary>
