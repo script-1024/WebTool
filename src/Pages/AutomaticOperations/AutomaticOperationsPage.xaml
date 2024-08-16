@@ -47,7 +47,7 @@
         </StackPanel>
 
         <ctrl:GridSplitter x:Name="Splitter" Grid.Row="1" Grid.Column="1" Visibility="Collapsed"
-                           HorizontalAlignment="Left" ResizeDirection="Auto">
+                           HorizontalAlignment="Left" ResizeDirection="Auto" RequestedTheme="Light">
             <ctrl:GridSplitter.RenderTransform>
                 <TranslateTransform X="-12" />
             </ctrl:GridSplitter.RenderTransform>
