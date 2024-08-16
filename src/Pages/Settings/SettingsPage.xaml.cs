@@ -12,7 +12,11 @@ public sealed partial class SettingsPage : Page
     public SettingsPage()
     {
         this.InitializeComponent();
+
+        // 加载数据
+        AppVersionTag.Description = App.FullVersion;
         ThemeColorComboBox.SelectedIndex = (int)App.ElementTheme;
+        ThemeBackdropComboBox.SelectedIndex = (int)App.Backdrop;
 
         // 更改窗口主题
         ThemeColorComboBox.SelectionChanged += (_, _) =>
