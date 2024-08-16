@@ -24,6 +24,14 @@
         <TextBlock Text="設定" FontSize="36" Margin="0, 0, 0, 12"/>
 
         <ctrl:SettingsCard
+            x:Name="AppVersionTag"
+            Header="版本編號"
+            HeaderIcon="{ui:FontIcon Glyph=&#xE946;}">
+
+            <HyperlinkButton Content="GitHub" NavigateUri="https://github.com/script-1024/WebTool"/>
+        </ctrl:SettingsCard>
+
+        <ctrl:SettingsCard
             Header="顏色主題"
             Description="更改應用程式的主題色彩"
             HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
