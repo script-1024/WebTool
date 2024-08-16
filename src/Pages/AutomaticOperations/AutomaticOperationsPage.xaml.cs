@@ -19,6 +19,9 @@ namespace WebTool.Pages
             // 订阅浏览器事件
             SubscribeToWebViewEvents();
 
+            // 应用主题更新事件
+            App.ThemeChanged += App_ThemeChanged;
+
             // 按键导航事件
             UriTextBox.KeyDown += UriTextBox_KeyDown;
 

@@ -12,28 +12,17 @@ public sealed partial class SettingsPage : Page
     public SettingsPage()
     {
         this.InitializeComponent();
-        SC0_ThemeColorComboBox.SelectedIndex = (int)App.ElementTheme;
+        ThemeColorComboBox.SelectedIndex = (int)App.ElementTheme;
 
         // 更改窗口主题
-        SC0_ThemeColorComboBox.SelectionChanged += (_, _) =>
+        ThemeColorComboBox.SelectionChanged += (_, _) =>
         {
-            App.ElementTheme = (ElementTheme)SC0_ThemeColorComboBox.SelectedIndex;
+            App.ElementTheme = (ElementTheme)ThemeColorComboBox.SelectedIndex;
         };
 
-        SC1_ThemeBackdropComboBox.SelectionChanged += (_, _) =>
+        ThemeBackdropComboBox.SelectionChanged += (_, _) =>
         {
-            switch (SC1_ThemeBackdropComboBox.SelectedIndex)
-            {
-                case 0:
-                    App.MainWindow.SystemBackdrop = App.MicaBackdrop;
-                    break;
-                case 1:
-                    App.MainWindow.SystemBackdrop = App.MicaAltBackdrop;
-                    break;
-                case 2:
-                    App.MainWindow.SystemBackdrop = App.AcrylicBackdrop;
-                    break;
-            }
+            App.Backdrop = (App.AppBackdrop)ThemeBackdropComboBox.SelectedIndex;
         };
     }
 }

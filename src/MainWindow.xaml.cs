@@ -26,7 +26,7 @@ namespace WebTool
             // 外观样式
             this.ExtendsContentIntoTitleBar = true;
             this.SystemBackdrop = new MicaBackdrop();
-            App.OnThemeChanged += (theme) => RootGrid.RequestedTheme = theme;
+            App.ThemeChanged += (theme) => RootGrid.RequestedTheme = theme;
 
             // 导航控件
             Navi.SelectionChanged += Navi_SelectionChanged;

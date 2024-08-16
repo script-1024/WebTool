@@ -1,24 +1,17 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Windows.Storage;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
-using Windows.Storage;
+using Microsoft.UI.Composition.SystemBackdrops;
+using System.Diagnostics.CodeAnalysis;
+using System;
 
 namespace WebTool
 {
-    /// <summary>
-    /// Provides application-specific behavior to supplement the default Application class.
-    /// </summary>
     public partial class App : Application
     {
-        /// <summary>
-        /// Initializes the singleton application object.  This is the first line of authored code
-        /// executed, and as such is the logical equivalent of main() or WinMain().
-        /// </summary>
         public App()
         {
             this.InitializeComponent();
-
-            // 还原应用设置
-            ElementTheme = (ElementTheme)(ApplicationData.Current.LocalSettings.Values["RequestedTheme"] ?? 0);
         }
 
         /// <summary>
@@ -27,36 +20,85 @@ namespace WebTool
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             m_window = new MainWindow();
-            m_window.Activate();
 
-            // 手动广播事件，更新窗口主题
-            OnThemeChanged?.Invoke(m_theme);
+            // 还原应用设置
+            ElementTheme = GetAppData("RequestedTheme", ElementTheme.Default);
+            Backdrop = GetAppData("AppBackdrop", AppBackdrop.Mica);
+
+            m_window.Activate();
+        }
+
+        public static void StoreAppData(string key, object value)
+        {
+            if (value is Enum) value = (int)value;
+            ApplicationData.Current.LocalSettings.Values[key] = value;
+        }
+
+        public static T GetAppData<T>(string key, [NotNull] T fallbackValue) where T : struct
+        {
+            var value = ApplicationData.Current.LocalSettings.Values[key];
+            return value is null ? fallbackValue : (T)value;
         }
 
         private static Window m_window;
+
+        public static new App Current
+        {
+            get => Application.Current as App;
+        }
+
+        public static MainWindow MainWindow
+        {
+            get => (m_window is null || m_window is not MainWindow mainWindow) ? null : mainWindow;
+        }
+
+        public delegate void ThemeChangedEvent(ElementTheme theme);
+
+        public static event ThemeChangedEvent ThemeChanged;
+
         private static ElementTheme m_theme;
 
-        public delegate void ThemeChanged(ElementTheme theme);
-        public static event ThemeChanged OnThemeChanged;
         public static ElementTheme ElementTheme
         {
             get => m_theme;
             set
             {
                 m_theme = value;
-                ApplicationData.Current.LocalSettings.Values["RequestedTheme"] = (int)value;
-                OnThemeChanged?.Invoke(value);
+                StoreAppData("RequestedTheme", value);
+                ThemeChanged?.Invoke(value);
             }
         }
 
-        public static new App Current { get => Application.Current as App; }
-        public static MainWindow MainWindow
-        {
-            get => (m_window is null || m_window is not MainWindow mainWindow) ? null : mainWindow;
-        }
-
         public static readonly MicaBackdrop MicaBackdrop = new();
-        public static readonly MicaBackdrop MicaAltBackdrop = new() { Kind = Microsoft.UI.Composition.SystemBackdrops.MicaKind.BaseAlt };
+        
+        public static readonly MicaBackdrop MicaAltBackdrop = new() { Kind = MicaKind.BaseAlt };
+        
         public static readonly DesktopAcrylicBackdrop AcrylicBackdrop = new();
+
+        public enum AppBackdrop { Mica, MicaALt, Acrylic };
+
+        private static AppBackdrop m_backdrop;
+
+        public static AppBackdrop Backdrop
+        {
+            get => m_backdrop;
+            set
+            {
+                m_backdrop = value;
+                StoreAppData("AppBackdrop", value);
+                switch (value)
+                {
+                    case AppBackdrop.Mica:
+                        m_window.SystemBackdrop = MicaBackdrop;
+                        break;
+                    case AppBackdrop.MicaALt:
+                        m_window.SystemBackdrop = MicaAltBackdrop;
+                        break;
+                    case AppBackdrop.Acrylic:
+                        m_window.SystemBackdrop = AcrylicBackdrop;
+                        break;
+                }
+            }
+        }
     }
 }

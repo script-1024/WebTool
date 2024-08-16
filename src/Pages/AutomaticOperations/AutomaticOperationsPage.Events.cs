@@ -6,11 +6,18 @@ using Windows.System;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Microsoft.UI.Xaml;
 
 namespace WebTool.Pages;
 
 public sealed partial class AutomaticOperationsPage
 {
+    private void App_ThemeChanged(ElementTheme theme)
+    {
+        // 更改浏览器偏好色彩
+        WebView.CoreWebView2.Profile.PreferredColorScheme = (CoreWebView2PreferredColorScheme)theme;
+    }
+
     #region "WebView"
 
     /// <summary>
