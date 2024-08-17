@@ -1,14 +1,16 @@
-﻿using Windows.Storage;
+﻿using System;
+using System.IO;
+using Windows.Storage;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Composition.SystemBackdrops;
 using System.Diagnostics.CodeAnalysis;
-using System;
 
 namespace WebTool
 {
     public partial class App : Application
     {
+        public static readonly string SpecificDirectory = @"%USERPROFILE%\Documents\WebTool";
         public static readonly string FullVersion = "Beta 1.0 build 0816";
         public static readonly string ShortVersion = "1.0";
         public static readonly string Language = "zh-TW";
@@ -17,6 +19,14 @@ namespace WebTool
         {
             this.InitializeComponent();
             Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", $"--lang={Language}");
+
+            var path = Environment.ExpandEnvironmentVariables(SpecificDirectory);
+
+            // 应用专用目录
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+            Directory.SetCurrentDirectory(path);
+            Directory.CreateDirectory("Config");
+            Directory.CreateDirectory("Downloads");
         }
 
         /// <summary>
