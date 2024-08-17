@@ -8,61 +8,94 @@
     xmlns:local="using:WebTool.Controls"
     NavigationCacheMode="Required">
 
-    <StackPanel x:Name="RootPanel" Padding="24">
-        <StackPanel.Resources>
-            <ResourceDictionary>
-                <Style TargetType="ctrl:SettingsCard">
-                    <Setter Property="Margin" Value="12, 12, 12, 0"/>
-                </Style>
-                <Style TargetType="Expander">
-                    <Setter Property="Margin" Value="12, 12, 12, 0"/>
-                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
-                </Style>
-            </ResourceDictionary>
-        </StackPanel.Resources>
+    <ScrollViewer>
+        <StackPanel x:Name="RootPanel" Padding="36">
+            <StackPanel.Resources>
+                <ResourceDictionary>
+                    <Style TargetType="ctrl:SettingsCard">
+                        <Setter Property="Margin" Value="0, 2"/>
+                    </Style>
+                    <Style TargetType="Expander">
+                        <Setter Property="Margin" Value="0, 2"/>
+                        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Padding" Value="0"/>
+                    </Style>
+                    <Style x:Key="ExpanderInfoBar" TargetType="InfoBar">
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="IsOpen" Value="True"/>
+                        <Setter Property="IsClosable" Value="False"/>
+                        <Setter Property="CornerRadius" Value="0"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                    </Style>
+                    <Style x:Key="ExpanderContentCard" TargetType="ctrl:SettingsCard">
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="CornerRadius" Value="0"/>
+                        <Setter Property="BorderThickness" Value="0, 1, 0, 0"/>
+                    </Style>
+                    <Style x:Key="ExpanderClickableContentCard" TargetType="ctrl:SettingsCard">
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="CornerRadius" Value="0"/>
+                        <Setter Property="IsClickEnabled" Value="True"/>
+                        <Setter Property="BorderThickness" Value="0, 1, 0, 0"/>
+                    </Style>
+                </ResourceDictionary>
+            </StackPanel.Resources>
 
-        <TextBlock Text="設定" FontSize="36" Margin="0, 0, 0, 12"/>
+            <TextBlock Text="設定" FontSize="36" Margin="0, 4, 0, 24"/>
 
-        <ctrl:SettingsCard
-            x:Name="AppVersionTag"
-            Header="版本編號"
-            HeaderIcon="{ui:FontIcon Glyph=&#xE946;}">
+            <ctrl:SettingsCard
+                x:Name="AppVersionTag"
+                Header="版本編號"
+                HeaderIcon="{ui:FontIcon Glyph=&#xE946;}">
 
-            <HyperlinkButton Content="GitHub" NavigateUri="https://github.com/script-1024/WebTool"/>
-        </ctrl:SettingsCard>
+                <HyperlinkButton Content="GitHub" NavigateUri="https://github.com/script-1024/WebTool"/>
+            </ctrl:SettingsCard>
 
-        <ctrl:SettingsCard
-            Header="顏色主題"
-            Description="更改應用程式的主題色彩"
-            HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
+            <ctrl:SettingsCard
+                Header="顏色主題"
+                Description="更改應用程式的主題色彩"
+                HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
 
-            <ComboBox x:Name="ThemeColorComboBox" SelectedIndex="0">
-                <ComboBoxItem Content="跟隨系統"/>
-                <ComboBoxItem Content="淺色"/>
-                <ComboBoxItem Content="深色"/>
-            </ComboBox>
-        </ctrl:SettingsCard>
+                <ComboBox x:Name="ThemeColorComboBox" SelectedIndex="0">
+                    <ComboBoxItem Content="跟隨系統"/>
+                    <ComboBoxItem Content="淺色"/>
+                    <ComboBoxItem Content="深色"/>
+                </ComboBox>
+            </ctrl:SettingsCard>
 
-        <ctrl:SettingsCard
-            Header="背景材質"
-            Description="更改應用程式的背景材質"
-            HeaderIcon="{ui:FontIcon Glyph=&#xE7F7;}">
+            <ctrl:SettingsCard
+                Header="背景材質"
+                Description="更改應用程式的背景材質"
+                HeaderIcon="{ui:FontIcon Glyph=&#xE7F7;}">
 
-            <ComboBox x:Name="ThemeBackdropComboBox" SelectedIndex="0">
-                <ComboBoxItem Content="雲母"/>
-                <ComboBoxItem Content="雲母變種"/>
-                <ComboBoxItem Content="壓克力"/>
-            </ComboBox>
-        </ctrl:SettingsCard>
+                <ComboBox x:Name="ThemeBackdropComboBox" SelectedIndex="0">
+                    <ComboBoxItem Content="雲母"/>
+                    <ComboBoxItem Content="雲母變種"/>
+                    <ComboBoxItem Content="壓克力"/>
+                </ComboBox>
+            </ctrl:SettingsCard>
 
-        <Expander>
-            <Expander.Header>
-                <local:HeaderedContentControl
-                    Header="配置文件" Description="更改應用程式使用的設定檔"
-                    Icon="{ui:FontIcon Glyph=&#xE74C;}"/>
-                
-            </Expander.Header>
-            
-        </Expander>
-    </StackPanel>
+            <Expander HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Padding="0">
+                <Expander.Header>
+                    <local:HeaderedContentControl
+                        Header="配置文件" Description="更改應用程式使用的設定檔"
+                        Icon="{ui:FontIcon Glyph=&#xE74C;}"/>
+                </Expander.Header>
+
+                <Expander.Content>
+                    <StackPanel>
+                        <ctrl:SettingsCard x:Name="OpenConfigClickableCard" Style="{ThemeResource ExpanderClickableContentCard}">
+                            <ctrl:SettingsCard.Header>
+                                <local:HeaderedContentControl
+                                    Margin="20, 0"
+                                    Header="前往配置文件保存目錄"/>
+                            </ctrl:SettingsCard.Header>
+                        </ctrl:SettingsCard>
+                    </StackPanel>
+                </Expander.Content>
+            </Expander>
+        </StackPanel>
+    </ScrollViewer>
 </Page>

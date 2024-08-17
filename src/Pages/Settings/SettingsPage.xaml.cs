@@ -1,6 +1,9 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using System.Diagnostics;
+using System.IO;
+using WebTool.Controls;
 
 namespace WebTool.Pages;
 
@@ -17,6 +20,10 @@ public sealed partial class SettingsPage : Page
         AppVersionTag.Description = App.FullVersion;
         ThemeColorComboBox.SelectedIndex = (int)App.ElementTheme;
         ThemeBackdropComboBox.SelectedIndex = (int)App.Backdrop;
+
+        var configPath = Directory.GetCurrentDirectory() + @"\Config\";
+        (OpenConfigClickableCard.Header as HeaderedContentControl).Description = configPath;
+        OpenConfigClickableCard.Click += (_, _) => Process.Start(new ProcessStartInfo() { FileName="explorer", Arguments=$"\"{configPath}\"" });
 
         // 更改窗口主题
         ThemeColorComboBox.SelectionChanged += (_, _) =>
