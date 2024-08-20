@@ -53,17 +53,19 @@ function getCurrentKeyword() {
     return TypeChecker.isNull(searchLabel) ? '' : searchLabel.innerText;
 }
 
-async function getProductCardAsync(index) {
+async function getProductCardAsync(index, maxRetries = 30) {
     const count = getItemCount();
     const container = getContainer();
     if (index >= count) return null;
 
     let card = document.getElementsByTagName('app-product-card')[index];
-    while (TypeChecker.isUndefined(card)) {
+
+    let retries = 0;
+    while (TypeChecker.isUndefined(card) && retries < maxRetries) {
         container.scrollTo(0, container.scrollHeight - 600);
         await delay(20);
         container.scrollTo(0, container.scrollHeight);
-        if (!await ensureLoadedAsync(500)) return null;
+        if (++retries >= maxRetries || !await ensureLoadedAsync(200)) throw new Error('Cannot ensure product card be loaded.');
         card = document.getElementsByTagName('app-product-card')[index];
     }
 
