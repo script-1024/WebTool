@@ -1,11 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Windows.UI;
 using Microsoft.UI;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
 
 namespace WebTool.Lib;
 
@@ -18,6 +17,23 @@ public static class JsonHelper
     {
         try { JsonDocument.Parse(json); return true; }
         catch (JsonException) { return false; }
+    }
+
+    /// <summary>
+    /// 尝试从 JsonElement 取值，成功时执行特定动作。若明确指定了值类型且取得结果不符合，将抛出 InvalidDataException
+    /// </summary>
+    /// <param name="element">来源</param>
+    /// <param name="key">键名</param>
+    /// <param name="action">成功取值后的特定动作</param>
+    /// <param name="kind">(可选) 要比对的值类型</param>
+    /// <returns>一个布尔值，表示操作是否成功</returns>
+    /// <exception cref="InvalidDataException"></exception>
+    public static bool TryGetValue(this JsonElement element, string key, Action<JsonElement> action, JsonValueKind kind = JsonValueKind.Undefined)
+    {
+        if (!element.TryGetProperty(key, out var result)) return false;
+        if (kind != JsonValueKind.Undefined && result.ValueKind != kind) throw new InvalidDataException();
+        action(result);
+        return true;
     }
 }
 

@@ -41,7 +41,7 @@ namespace WebTool.Pages
                 var visible = (bool)OpenPanelButton.IsChecked;
                 AdvancedPanel.SetVisibility(visible);
                 //Splitter.Visibility = AdvancedPanel.SetVisibility(visible);
-
+                
                 // 重置列宽度
                 var colDef = RootGrid.ColumnDefinitions[1];
                 if (!visible)
