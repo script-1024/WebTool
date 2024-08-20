@@ -11,8 +11,8 @@ namespace WebTool
     public partial class App : Application
     {
         public static readonly string SpecificDirectory = @"%USERPROFILE%\Documents\WebTool";
-        public static readonly string FullVersion = "Beta 1.0 build 0816";
-        public static readonly string ShortVersion = "1.0";
+        public static readonly string FullVersion = "Beta 1.1/odkst build 0820";
+        public static readonly string ShortVersion = "1.1";
         public static readonly string Language = "zh-TW";
 
         public App()
