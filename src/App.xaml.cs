@@ -4,7 +4,6 @@ using Windows.Storage;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Composition.SystemBackdrops;
-using System.Diagnostics.CodeAnalysis;
 
 namespace WebTool
 {
@@ -43,13 +42,13 @@ namespace WebTool
             m_window.Activate();
         }
 
-        public static void StoreAppData(string key, object value)
+        public static void SetAppData(string key, object value)
         {
             if (value is Enum) value = (int)value;
             ApplicationData.Current.LocalSettings.Values[key] = value;
         }
 
-        public static T GetAppData<T>(string key, [NotNull] T fallbackValue) where T : struct
+        public static T GetAppData<T>(string key, T fallbackValue)
         {
             var value = ApplicationData.Current.LocalSettings.Values[key];
             return value is null ? fallbackValue : (T)value;
@@ -79,7 +78,7 @@ namespace WebTool
             set
             {
                 m_theme = value;
-                StoreAppData("RequestedTheme", value);
+                SetAppData("RequestedTheme", value);
                 ThemeChanged?.Invoke(value);
             }
         }
@@ -100,7 +99,7 @@ namespace WebTool
             set
             {
                 m_backdrop = value;
-                StoreAppData("AppBackdrop", value);
+                SetAppData("AppBackdrop", value);
                 switch (value)
                 {
                     case AppBackdrop.Mica:
