@@ -69,8 +69,8 @@
             <Border Margin="0, 24" BorderThickness="1" BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"/>
 
             <StackPanel Orientation="Horizontal">
-                <Button x:Name="GoHomeButton" Content="回到商品目錄" Margin="2, 0, 4, 0"/>
-                <Button x:Name="GetThisPageButton" Content="抓取本頁數據" Margin="4, 0, 2, 0"/>
+                <Button x:Name="GoHomeButton" Content="回到首頁" Margin="0, 0, 4, 0"/>
+                <Button x:Name="UseDefaultButton" Content="使用預設值" Margin="4, 0, 0, 0"/>
             </StackPanel>
             <!-- 后续版本删除 -->
 
