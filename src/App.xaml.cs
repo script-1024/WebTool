@@ -26,6 +26,7 @@ namespace WebTool
             Directory.SetCurrentDirectory(path);
             Directory.CreateDirectory("Config");
             Directory.CreateDirectory("Downloads");
+            Directory.CreateDirectory("Scripts");
         }
 
         /// <summary>
@@ -40,6 +41,12 @@ namespace WebTool
             Backdrop = GetAppData("AppBackdrop", AppBackdrop.Mica);
 
             m_window.Activate();
+        }
+
+        public static void RemoveAppData(string key)
+        {
+            var localSettings = ApplicationData.Current.LocalSettings;
+            if (localSettings.Values.ContainsKey(key)) localSettings.Values.Remove(key);
         }
 
         public static void SetAppData(string key, object value)
