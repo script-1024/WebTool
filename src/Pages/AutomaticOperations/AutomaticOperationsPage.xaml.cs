@@ -20,6 +20,9 @@ namespace WebTool.Pages
             // 订阅浏览器事件
             PrepareWebViewAsync();
 
+            // 适用于 orderkeystone.com 的特定功能
+            CustomizeFunctions_orderkeystone();
+
             // 应用主题更新事件
             App.ThemeChanged += App_ThemeChanged;
 
@@ -36,7 +39,8 @@ namespace WebTool.Pages
             OpenPanelButton.Click += (_, _) =>
             {
                 var visible = (bool)OpenPanelButton.IsChecked;
-                Splitter.Visibility = AdvancedPanel.SetVisibility(visible);
+                AdvancedPanel.SetVisibility(visible);
+                //Splitter.Visibility = AdvancedPanel.SetVisibility(visible);
 
                 // 重置列宽度
                 var colDef = RootGrid.ColumnDefinitions[1];
@@ -69,6 +73,28 @@ namespace WebTool.Pages
                   Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0 WebTool/{App.ShortVersion}";
         }
 
+        private void CustomizeFunctions_orderkeystone()
+        {
+            Uri HOME_URI = new("https://portal.lkqcorp.com/login");
+            WebView.Source = HOME_URI;
+
+            SearchButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"search('{SearchBox.Text.Trim()}')");
+            GoHomeButton.Click += (_, _) => WebView.Source = HOME_URI;
+
+            SkipButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"Runner.Skip()");
+            StopAllButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"Runner.StopAll()");
+            ResumeButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"Runner.Resume()");
+
+            StartButton.Click += async (_, _) =>
+            {
+                if (!int.TryParse(RDTextBox.Text.Trim(), out int rd)) return;
+                if (!int.TryParse(EDTextBox.Text.Trim(), out int ed)) return;
+                if (!int.TryParse(CDTextBox.Text.Trim(), out int cd)) return;
+                await WebView.ExecuteScriptAsync($"Runner.RunAsync({rd}, {ed}, {cd})");
+            };
+        }
+
+        #region NavigationBar
         private void UpdateWebViewNavigationBar()
         {
             (ReloadButton.Icon as FontIcon).Glyph = "\uE711"; // `Cancel` icon
@@ -119,6 +145,7 @@ namespace WebTool.Pages
                 fallBackSearchOnGoogle();
             }
         }
+        #endregion
 
         #region PrivateFields
 

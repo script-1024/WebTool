@@ -19,6 +19,7 @@
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
+        <!-- 导航栏 -->
         <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0, 0, 0, 1"
               Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
               BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}">
@@ -40,19 +41,50 @@
         <WebView2 x:Name="WebView" Grid.Row="1" Grid.Column="0" Source="about:blank"/>
 
         <StackPanel x:Name="AdvancedPanel" Grid.Row="1" Grid.Column="1"
-                    Visibility="Collapsed" MinWidth="180" BorderThickness="1, 0, 0, 0"
+                    Visibility="Collapsed" BorderThickness="1, 0, 0, 0" Padding="16"
                     Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}"
                     BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}">
             
+            <!-- 后续版本删除 -->
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="SearchBox" Header="搜索物品" PlaceholderText="物品 ID" Width="180"/>
+                <Button x:Name="SearchButton" Content="尋找" Margin="8, 0, 0, 0" VerticalAlignment="Bottom"/>
+            </StackPanel>
+
+            <Border Margin="0, 24" BorderThickness="1" BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"/>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="RDTextBox" Header="抓取延時" PlaceholderText="毫秒" Width="75"/>
+                <TextBox x:Name="EDTextBox" Header="檢查延時" PlaceholderText="毫秒" Width="75" Margin="8, 0"/>
+                <TextBox x:Name="CDTextBox" Header="循環延時" PlaceholderText="毫秒" Width="75"/>
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal" Margin="0, 16, 0, 0">
+                <Button x:Name="StartButton" Content="開始" Margin="0, 0, 4, 0"/>
+                <Button x:Name="SkipButton" Content="跳過" Margin="4, 0"/>
+                <Button x:Name="StopAllButton" Content="停止" Margin="4, 0"/>
+                <Button x:Name="ResumeButton" Content="恢復" Margin="4, 0, 0, 0"/>
+            </StackPanel>
+
+            <Border Margin="0, 24" BorderThickness="1" BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"/>
+
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="GoHomeButton" Content="回到商品目錄" Margin="2, 0, 4, 0"/>
+                <Button x:Name="GetThisPageButton" Content="抓取本頁數據" Margin="4, 0, 2, 0"/>
+            </StackPanel>
+            <!-- 后续版本删除 -->
+
         </StackPanel>
 
+        <!--
         <ctrl:GridSplitter x:Name="Splitter" Grid.Row="1" Grid.Column="1" Visibility="Collapsed"
                            HorizontalAlignment="Left" ResizeDirection="Auto" RequestedTheme="Light">
             <ctrl:GridSplitter.RenderTransform>
                 <TranslateTransform X="-12" />
             </ctrl:GridSplitter.RenderTransform>
         </ctrl:GridSplitter>
-
+        -->
+        
         <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" BorderThickness="0, 1, 0, 0"
                     Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}">
