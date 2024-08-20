@@ -7,6 +7,7 @@ using Windows.Foundation;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Microsoft.UI.Xaml;
+using Windows.Win32.Core;
 
 namespace WebTool.Pages;
 
@@ -16,6 +17,14 @@ public sealed partial class AutomaticOperationsPage
     {
         // 更改浏览器偏好色彩
         WebView.CoreWebView2.Profile.PreferredColorScheme = (CoreWebView2PreferredColorScheme)theme;
+    }
+
+    private void Window_Closing(object sender, WindowClosingEventArgs e)
+    {
+        App.MainWindow.Closing -= Window_Closing;
+        xlsxFile?.SaveAndClose();
+        xlsxFile = null;
+        e.TryCancel();
     }
 
     #region "WebView"

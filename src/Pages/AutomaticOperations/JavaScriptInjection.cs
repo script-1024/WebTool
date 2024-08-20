@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json;
+using System.Collections.Generic;
 using Windows.Foundation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
@@ -52,6 +53,13 @@ public sealed partial class AutomaticOperationsPage
                 var position = JsonSerializer.Deserialize<Point>(msg.Data, jsonSerializerOptions);
                 UpdateMousePosition(position);
                 break;
+            case "WriteToFile":
+                if (xlsxFile != null) WriteToFile(msg.Data);
+                break;
+            case "SaveFile":
+                xlsxFile?.SaveAndClose();
+                xlsxFile = null;
+                break;
         }
     }
 
@@ -60,6 +68,12 @@ public sealed partial class AutomaticOperationsPage
         // 更新 TextBlock 显示的鼠标位置
         CursorPositionTextBlock.Text = $"{position.X}, {position.Y}";
         if (position != mousePosition) WebView_MouseMove(position);
+    }
+
+    private void WriteToFile(JsonDocument jsonData)
+    {
+        var list = jsonData.Deserialize<List<Dictionary<string, JsonElement>>>(jsonSerializerOptions);
+        xlsxFile.AppendData(list);
     }
 
     #region PrivateFields

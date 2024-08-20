@@ -1,10 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Web;
-using System.Threading.Tasks;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.Web.WebView2.Core;
-using WebTool.Lib;
 using System.Text.RegularExpressions;
+using Microsoft.UI.Xaml.Controls;
+using WebTool.Lib;
+using WebTool.Lib.IO;
 
 namespace WebTool.Pages
 {
@@ -23,8 +23,9 @@ namespace WebTool.Pages
             // 适用于 orderkeystone.com 的特定功能
             CustomizeFunctions_orderkeystone();
 
-            // 应用主题更新事件
+            // 应用程序事件
             App.ThemeChanged += App_ThemeChanged;
+            App.MainWindow.Closing += Window_Closing;
 
             // 按键导航事件
             UriTextBox.KeyDown += UriTextBox_KeyDown;
@@ -80,6 +81,12 @@ namespace WebTool.Pages
 
             SearchButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"search('{SearchBox.Text.Trim()}')");
             GoHomeButton.Click += (_, _) => WebView.Source = HOME_URI;
+            UseDefaultButton.Click += (_, _) =>
+            {
+                RDTextBox.Text = "800";
+                EDTextBox.Text = "200";
+                CDTextBox.Text = "1000";
+            };
 
             SkipButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"Runner.Skip()");
             StopAllButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"Runner.StopAll()");
@@ -90,6 +97,21 @@ namespace WebTool.Pages
                 if (!int.TryParse(RDTextBox.Text.Trim(), out int rd)) return;
                 if (!int.TryParse(EDTextBox.Text.Trim(), out int ed)) return;
                 if (!int.TryParse(CDTextBox.Text.Trim(), out int cd)) return;
+                
+                int count = 0;
+                string date = $"{DateTime.Now:yyyy-MM-dd}", name, path;
+
+                do
+                {
+                    // 检查重名文件
+                    name = $"{date}_#{count++}";
+                    path = @$"Downloads\{name}.xlsx";
+                }
+                while (File.Exists(path));
+
+                // 创建新文件
+                xlsxFile = new XlsxFile(path, "product_list");
+
                 await WebView.ExecuteScriptAsync($"Runner.RunAsync({rd}, {ed}, {cd})");
             };
         }
@@ -153,6 +175,8 @@ namespace WebTool.Pages
 
         [GeneratedRegex(@"^http(s?)://([a-zA-Z0-9-]+\.)+[a-zA-Z0-9-]+(/.*)?$")]
         private static partial Regex HttpRegex();
+
+        private XlsxFile xlsxFile;
 
         #endregion
     }

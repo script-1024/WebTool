@@ -35,6 +35,25 @@ public static class JsonHelper
         action(result);
         return true;
     }
+
+    public static bool TryGetItemValue(this JsonElement element, out object value)
+    {
+        value = null;
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.True:
+            case JsonValueKind.False:
+                value = element.GetBoolean();
+                return true;
+            case JsonValueKind.Number:
+                value = element.GetDouble();
+                return true;
+            case JsonValueKind.String:
+                value = element.GetString();
+                return true;
+        }
+        return false;
+    }
 }
 
 public static class ColorHelper
