@@ -59,7 +59,9 @@ async function getAllDataAsync(readDelay, ensureDelay, startIndex, array = []) {
 async function main(readDelay, ensureDelay, cycleDelay, completed = 0, fetched = 0, array = []) {
     for (let i=completed; i<Runner.SearchList.length; i++) {
         if (Runner.IsProcessKilled >= 2) break;
-        search(Runner.SearchList[i]);
+
+        // 进行搜索
+        if (getCurrentKeyword() !== Runner.SearchList[i]) search(Runner.SearchList[i]);
         Runner.LastRun.Completed = i;
 
         // 确保加载完成
@@ -97,6 +99,7 @@ const Runner = {
 
     // 运行结果
     Result: [],
+    FlatResult: [],
     LastRun: {
         Fetched: 0,
         Completed: 0,
@@ -126,7 +129,8 @@ const Runner = {
         Runner.LastRun.ed = ensureDelay;
         Runner.LastRun.thisPageOnly = true;
         if (TypeChecker.isNullOrUndefined(Runner.Result)) Runner.Result = [];
-        return Runner.Result = (await getAllDataAsync(readDelay, ensureDelay, fetched, Runner.Result)).flat(1);
+        Runner.Result = await getAllDataAsync(readDelay, ensureDelay, fetched, Runner.Result);
+        Runner.FlatResult = Runner.Result.flat(1);
     },
     RunAsync: async (readDelay, ensureDelay, cycleDelay, completed = 0, fetched = 0) => {
         if (!TypeChecker.isNumber(readDelay) || readDelay <= 0) readDelay = Runner.DefaultDelay;
@@ -139,6 +143,7 @@ const Runner = {
         Runner.LastRun.cd = cycleDelay;
         Runner.LastRun.thisPageOnly = false;
         if (TypeChecker.isNullOrUndefined(Runner.Result)) Runner.Result = [];
-        return Runner.Result = (await main(readDelay, ensureDelay, cycleDelay, completed, fetched, Runner.Result)).flat(1);
+        Runner.Result = await main(readDelay, ensureDelay, cycleDelay, completed, fetched, Runner.Result);
+        Runner.FlatResult = Runner.Result.flat(1);
     }
 }

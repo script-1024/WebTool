@@ -44,7 +44,13 @@ function getContainer() {
 
 function getItemCount() {
     const resultText = document.querySelector('.results-text');
-    return parseInt(resultText.getElementsByTagName('span')[1].textContent);
+    const count = parseInt(resultText?.getElementsByTagName('span')[1].textContent);
+    return isNaN(count) ? 0 : count;
+}
+
+function getCurrentKeyword() {
+    const searchLabel = document.querySelector('.breadcrumb');
+    return TypeChecker.isNull(searchLabel) ? '' : searchLabel.innerText;
 }
 
 async function getProductCardAsync(index) {
