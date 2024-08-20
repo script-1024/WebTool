@@ -37,7 +37,19 @@ namespace WebTool.Pages
             {
                 var visible = (bool)OpenPanelButton.IsChecked;
                 Splitter.Visibility = AdvancedPanel.SetVisibility(visible);
-                if (!visible) RootGrid.ColumnDefinitions[1].Width = new(); // 重置宽度
+
+                // 重置列宽度
+                var colDef = RootGrid.ColumnDefinitions[1];
+                if (!visible)
+                {
+                    colDef.Width = new();
+                    colDef.MinWidth = 0;
+                }
+                else
+                {
+                    UpdateLayout();
+                    colDef.MinWidth = AdvancedPanel.ActualWidth;
+                }
             };
         }
 
@@ -96,7 +108,7 @@ namespace WebTool.Pages
                 if (!userInput.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
                     !userInput.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
                 {
-                    userInput = "http://" + userInput;
+                    userInput = "https://" + userInput;
                 }
 
                 if (HttpRegex().IsMatch(userInput)) WebView.Source = new Uri(userInput);
