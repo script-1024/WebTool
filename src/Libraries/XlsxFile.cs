@@ -3,29 +3,30 @@ using System.Linq;
 using System.Text.Json;
 using System.Collections.Generic;
 using ClosedXML.Excel;
+using System.IO;
+using System.IO.Pipes;
 
 namespace WebTool.Lib.IO;
 
 public class XlsxFile : IDisposable
 {
-    private readonly string _filePath;
     private readonly XLWorkbook _workbook;
     private readonly List<string> _headerList;
     private IXLWorksheet _worksheet;
+    private FileStream _fileStream;
     private int _currentRow;
-    private bool disposed = false;
-    private bool isFileCreated = false;
+    private bool _disposed = false;
 
-    private XlsxFile(string filePath, IXLWorksheet worksheet, List<string> headerList, int currentRow)
+    private XlsxFile(FileStream fileStream, IXLWorksheet worksheet, List<string> headerList, int currentRow)
     {
-        _filePath = filePath;
+        _fileStream = fileStream;
         _workbook = worksheet.Workbook;
         _worksheet = worksheet;
         _headerList = headerList;
         _currentRow = currentRow;
     }
 
-    private static void InitializeNewWorksheet(IXLWorksheet worksheet)
+    private static void SetWorksheetStyle(IXLWorksheet worksheet)
     {
         // 冻结表头行
         worksheet.SheetView.FreezeRows(1);
@@ -52,14 +53,24 @@ public class XlsxFile : IDisposable
     /// <returns>一个 <see cref="XlsxFile"/> 实例</returns>
     public static XlsxFile Create(string path, string worksheetName = "Sheet1")
     {
+        // 新建文件
         var workbook = new XLWorkbook();
-        var worksheet = workbook.Worksheets.Add(worksheetName);
+        workbook.Worksheets.Add(worksheetName);
+        workbook.SaveAs(path);
+        workbook.Dispose();
+
+        // 打开文件流并锁定文件
+        var fileStream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        workbook = new XLWorkbook(fileStream);
+
+        // 初始化
+        var worksheet = workbook.Worksheet(1);
         var headerList = new List<string>();
         int currentRow = 2; // 从第二行开始
 
-        InitializeNewWorksheet(worksheet);
+        SetWorksheetStyle(worksheet);
 
-        return new XlsxFile(path, worksheet, headerList, currentRow);
+        return new XlsxFile(fileStream, worksheet, headerList, currentRow);
     }
 
     /// <summary>
@@ -70,20 +81,23 @@ public class XlsxFile : IDisposable
     /// <returns>一个 <see cref="XlsxFile"/> 实例</returns>
     public static XlsxFile Open(string path, string worksheetName)
     {
-        var workbook = new XLWorkbook(path);
+        // 打开文件流并锁定文件
+        var fileStream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        var workbook = new XLWorkbook(fileStream);
 
         // 尝试获取指定工作表，如果不存在则创建一个新的
         if (!workbook.TryGetWorksheet(worksheetName, out var worksheet))
         {
             worksheet = workbook.Worksheets.Add(worksheetName);
-            InitializeNewWorksheet(worksheet);
         }
+
+        SetWorksheetStyle(worksheet);
 
         // 从文件首行加载表头
         var headerList = worksheet.Row(1).CellsUsed().Select(cell => cell.GetString()).ToList();
         int currentRow = worksheet.LastRowUsed()?.RowNumber() + 1 ?? 2;
 
-        return new XlsxFile(path, worksheet, headerList, currentRow);
+        return new XlsxFile(fileStream, worksheet, headerList, currentRow);
     }
 
     /// <summary>
@@ -92,6 +106,8 @@ public class XlsxFile : IDisposable
     /// <param name="dataList">一个字典列表，每个列表元素的所有键值都会分别对应到表头和单元格</param>
     public void AppendData(List<Dictionary<string, JsonElement>> dataList)
     {
+        if (_disposed) return;
+
         foreach (var data in dataList)
         {
             foreach (var key in data.Keys)
@@ -133,17 +149,23 @@ public class XlsxFile : IDisposable
     /// <param name="row">单元格所在的行</param>
     /// <param name="column">单元格所在的列</param>
     /// <returns><see cref="IXLCell"/></returns>
-    public IXLCell this[int row, int column] { get => _worksheet.Cell(row, column); }
+    public IXLCell this[int row, int column] { get => _disposed ? null : _worksheet.Cell(row, column); }
 
     /// <summary>
     /// 设置行高
     /// </summary>
-    public void SetRowHeight(int row, double height) => _worksheet.Row(row).Height = height;
+    public void SetRowHeight(int row, double height)
+    {
+        if (!_disposed) _worksheet.Row(row).Height = height;
+    }
 
     /// <summary>
     /// 设置列宽
     /// </summary>
-    public void SetColumnWidth(int column, double width) => _worksheet.Column(column).Width = width;
+    public void SetColumnWidth(int column, double width)
+    {
+        if (!_disposed) _worksheet.Column(column).Width = width;
+    }
 
     /// <summary>
     /// 改变当前作用中的工作表
@@ -164,11 +186,11 @@ public class XlsxFile : IDisposable
     /// </summary>
     public void SaveAndClose()
     {
-        if (disposed) return;
-        if (isFileCreated) _workbook.Save();
-        else _workbook.SaveAs(_filePath);
+        if (_disposed) return;
+        _workbook.Save();
         _workbook.Dispose(); // 释放资源
-        disposed = true;
+        _fileStream.Close(); // 释放文件流
+        _disposed = true;
     }
 
     /// <summary>
@@ -176,9 +198,8 @@ public class XlsxFile : IDisposable
     /// </summary>
     public void Save()
     {
-        if (disposed) return;
-        if (isFileCreated) _workbook.Save();
-        else _workbook.SaveAs(_filePath);
+        if (_disposed) return;
+        _workbook.Save();
         // 不释放资源，这样可以继续使用
     }
 
@@ -187,21 +208,22 @@ public class XlsxFile : IDisposable
     /// </summary>
     public void Close()
     {
-        if (disposed) return;
+        if (_disposed) return;
         _workbook.Dispose();
-        disposed = true;
+        _fileStream.Close(); // 释放文件流
+        _disposed = true;
     }
 
     // IDisposable 实现，以便在 using 语句中使用
     public void Dispose()
     {
-        if (disposed) return;
+        if (_disposed) return;
         SaveAndClose();
         GC.SuppressFinalize(this);
     }
 
     ~XlsxFile()
     {
-        if (!disposed) Dispose();
+        if (!_disposed) Dispose();
     }
 }
