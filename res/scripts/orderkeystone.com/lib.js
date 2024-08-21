@@ -53,7 +53,7 @@ function getCurrentKeyword() {
     return TypeChecker.isNull(searchLabel) ? '' : searchLabel.innerText;
 }
 
-async function getProductCardAsync(index, maxRetries = 30) {
+async function getProductCardAsync(index, maxRetries = -1) {
     const count = getItemCount();
     const container = getContainer();
     if (index >= count) return null;
@@ -61,11 +61,12 @@ async function getProductCardAsync(index, maxRetries = 30) {
     let card = document.getElementsByTagName('app-product-card')[index];
 
     let retries = 0;
+    if (maxRetries <= 0) maxRetries = parseInt(index / 25);
     while (TypeChecker.isUndefined(card) && retries < maxRetries) {
         container.scrollTo(0, container.scrollHeight - 600);
-        await delay(20);
+        await delay(500);
         container.scrollTo(0, container.scrollHeight);
-        if (++retries >= maxRetries || !await ensureLoadedAsync(200)) throw new Error('Cannot ensure product card be loaded.');
+        if (++retries >= maxRetries || !await ensureLoadedAsync(500)) throw new Error('Cannot ensure product card be loaded.');
         card = document.getElementsByTagName('app-product-card')[index];
     }
 
