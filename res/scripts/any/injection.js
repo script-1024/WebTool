@@ -2,7 +2,7 @@ const dbgHelper = {
     postMsg: {useWhiteList: false, blockList: ['MouseEvent']}
 };
 
-function postMessage(type, data) {
+function postMsg(type, data) {
     const msg = {Type: type, Data: data}
     window.chrome.webview?.postMessage(msg);
     const useWhiteList = dbgHelper.postMsg.useWhiteList;
@@ -11,5 +11,5 @@ function postMessage(type, data) {
 }
 
 document.addEventListener('mousemove', (e) => {
-    postMessage('MouseEvent', {X: e.clientX, Y: e.clientY});
+    postMsg('MouseEvent', {X: e.clientX, Y: e.clientY});
 });

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Windows.Foundation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
+using WebTool.Lib;
 
 namespace WebTool.Pages;
 
@@ -28,7 +29,7 @@ public sealed partial class AutomaticOperationsPage
                 postMsg: {useWhiteList: false, blockList: ['MouseEvent']}
             };
 
-            function postMessage(type, data) {
+            function postMsg(type, data) {
                 const msg = {Type: type, Data: data}
                 window.chrome.webview?.postMessage(msg);
                 const useWhiteList = dbgHelper.postMsg.useWhiteList;
@@ -37,7 +38,7 @@ public sealed partial class AutomaticOperationsPage
             }
 
             document.addEventListener('mousemove', (e) => {
-                postMessage('MouseEvent', {X: e.clientX, Y: e.clientY});
+                postMsg('MouseEvent', {X: e.clientX, Y: e.clientY});
             });";
 
         await WebView.ExecuteScriptAsync(script);
@@ -50,16 +51,27 @@ public sealed partial class AutomaticOperationsPage
         switch (msg.Type)
         {
             case "MouseEvent":
-                var position = JsonSerializer.Deserialize<Point>(msg.Data, jsonSerializerOptions);
+                var position = msg.Data.Deserialize<Point>(jsonSerializerOptions);
                 UpdateMousePosition(position);
                 break;
+
+            case "ShowProgressBar":
+            case "HideProgressBar":
+                ProgressPanel.SetVisibility(msg.Type[0..4] == "Show");
+                break;
+
+            case "UpdateProgressBar":
+                var info = msg.Data.Deserialize<ProgressInfo>(jsonSerializerOptions);
+                ProgressCompletedLabel.Text = $"{info.Completed}";
+                ProgressDetailLabel.Text = $"{info.Current}/{info.Total}";
+                ProgressDetailBar.Value = info.Current / info.Total * 100;
+                break;
+
             case "WriteToFile":
                 if (xlsxFile != null) WriteToFile(msg.Data);
+                xlsxFile?.Save();
                 break;
-            case "SaveFile":
-                xlsxFile?.SaveAndClose();
-                xlsxFile = null;
-                break;
+            
         }
     }
 
@@ -83,6 +95,13 @@ public sealed partial class AutomaticOperationsPage
         AllowTrailingCommas = true,
         PropertyNameCaseInsensitive = true
     };
+
+    private struct ProgressInfo
+    {
+        public double Current { get; set; }
+        public double Total { get; set; }
+        public double Completed { get; set; }
+    }
 
     private Point mousePosition = new(0, 0);
 
