@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Collections.Generic;
-using Windows.Foundation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
+using Windows.Foundation;
 using WebTool.Lib;
 
 namespace WebTool.Pages;
@@ -50,31 +51,43 @@ public sealed partial class AutomaticOperationsPage
     {
         // 解析 JavaScript 发送回来的消息
         var msg = JsonSerializer.Deserialize<ReceivedMessage>(e.WebMessageAsJson, jsonSerializerOptions);
-        switch (msg.Type)
+        
+        // 异步处理事件，不阻塞消息接收
+        Task.Run(() =>
         {
-            case "MouseEvent":
-                var position = msg.Data.Deserialize<Point>(jsonSerializerOptions);
-                UpdateMousePosition(position);
-                break;
+            switch (msg.Type)
+            {
+                case "MouseEvent":
+                    var position = msg.Data.Deserialize<Point>(jsonSerializerOptions);
+                    UpdateMousePosition(position);
+                    break;
 
-            case "ShowProgressBar":
-            case "HideProgressBar":
-                ProgressPanel.SetVisibility(msg.Type[0..4] == "Show");
-                break;
+                case "ShowProgressBar":
+                case "HideProgressBar":
+                    ProgressPanel.SetVisibility(msg.Type[0..4] == "Show");
+                    break;
 
-            case "UpdateProgressBar":
-                var info = msg.Data.Deserialize<ProgressInfo>(jsonSerializerOptions);
-                ProgressCompletedLabel.Text = $"{info.Completed}";
-                ProgressDetailLabel.Text = $"{info.Current}/{info.Total}";
-                ProgressDetailBar.Value = info.Current / info.Total * 100;
-                break;
+                case "UpdateProgressBar":
+                    var info = msg.Data.Deserialize<ProgressInfo>(jsonSerializerOptions);
+                    ProgressCompletedLabel.Text = $"{info.Completed}";
+                    ProgressDetailLabel.Text = $"{info.Current}/{info.Total}";
+                    ProgressDetailBar.Value = info.Current / info.Total * 100;
+                    break;
 
-            case "WriteToFile":
-                if (xlsxFile != null) WriteToFile(msg.Data);
-                xlsxFile?.Save();
-                break;
-            
-        }
+                case "WriteToFile":
+                    if (xlsxFile != null)
+                    {
+                        WriteToFile(msg.Data);
+                        xlsxFile.Save();
+                    }
+                    break;
+
+                case "Finished":
+                    xlsxFile?.SaveAndClose();
+                    xlsxFile = null;
+                    break;
+            }
+        });
     }
 
     private void UpdateMousePosition(Point position)
