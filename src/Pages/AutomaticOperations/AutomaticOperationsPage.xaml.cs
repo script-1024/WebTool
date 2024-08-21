@@ -2,9 +2,13 @@
 using System.IO;
 using System.Web;
 using System.Text.RegularExpressions;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WebTool.Lib;
 using WebTool.Lib.IO;
+using Windows.Storage.Pickers;
+using Windows.Storage;
+using System.Threading.Tasks;
 
 namespace WebTool.Pages
 {
@@ -89,8 +93,106 @@ namespace WebTool.Pages
             };
 
             SkipButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"Runner.Skip()");
-            StopAllButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"Runner.StopAll()");
-            ResumeButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"Runner.Resume()");
+            
+            StopAllButton.Click += async (_, _) =>
+            {
+                await WebView.ExecuteScriptAsync($"Runner.StopAll()");
+                if (xlsxFile != null)
+                {
+                    await Task.Delay(15000);
+                    xlsxFile?.SaveAndClose();
+                    xlsxFile = null;
+                }
+            };
+            
+            ResumeButton.Click += async (_, _) =>
+            {
+                var stackPanel = new StackPanel() { Padding = new(16), MinWidth = 400 };
+                var tip = new InfoBar()
+                {
+                    Content = "可由下方進度條得知抓取進度",
+                    Severity = InfoBarSeverity.Informational,
+                    IsOpen = true, IsClosable = false,
+                    Margin = new(0, 0, 0, 24)
+                };
+
+                var horizontalGrid = new Grid() { Margin = new(16) };
+                horizontalGrid.ColumnDefinitions.Add(new());
+                horizontalGrid.ColumnDefinitions.Add(new());
+                horizontalGrid.ColumnDefinitions.Add(new());
+
+                var completedTextBox = new TextBox() { Header = "完成頁面", Margin = new(8), PlaceholderText = "0" };
+                var fetchedTextBox = new TextBox() { Header = "已抓取項", Margin = new(8), PlaceholderText = "0" };
+                var selectFileButton = new Button()
+                {
+                    Content = "選擇檔案", Margin = new(8),
+                    VerticalAlignment = VerticalAlignment.Bottom,
+                    Style = (Style)Resources["AccentButtonStyle"]
+                };
+
+                horizontalGrid.Children.Add(completedTextBox);
+                horizontalGrid.Children.Add(fetchedTextBox);
+                horizontalGrid.Children.Add(selectFileButton);
+
+                Grid.SetColumn(completedTextBox, 0);
+                Grid.SetColumn(fetchedTextBox, 1);
+                Grid.SetColumn(selectFileButton, 2);
+
+                stackPanel.Children.Add(tip);
+                stackPanel.Children.Add(horizontalGrid);
+
+                var dialog = new ContentDialog()
+                {
+                    XamlRoot = this.XamlRoot,
+                    DefaultButton = ContentDialogButton.Primary,
+                    IsPrimaryButtonEnabled = false,
+                    PrimaryButtonText = "開始執行",
+                    CloseButtonText = "取消",
+                    Title = "恢復上個工作階段",
+                    Content = stackPanel
+                };
+
+                selectFileButton.Click += async (_, _) =>
+                {
+                    var picker = new FileOpenPicker();
+
+                    // 取得当前窗口句柄，将选择器的拥有者设为此窗口
+                    WinRT.Interop.InitializeWithWindow.Initialize(picker, App.MainWindow.Hwnd);
+
+                    // 选择器的预设路径
+                    picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+
+                    // 文件类型
+                    picker.FileTypeFilter.Add(".xlsx");
+
+                    // 选择文件
+                    xlsxFile?.SaveAndClose();
+                    StorageFile file = await picker.PickSingleFileAsync();
+                    if (file != null)
+                    {
+                        dialog.IsPrimaryButtonEnabled = true;
+                        xlsxFile = XlsxFile.Open(file.Path, "product_list");
+                    }
+                };
+
+                var result = await dialog.ShowAsync();
+
+                if (result == ContentDialogResult.Primary)
+                {
+                    if (!int.TryParse(RDTextBox.Text.Trim(), out int rd)) rd = 500;
+                    if (!int.TryParse(EDTextBox.Text.Trim(), out int ed)) ed = 500;
+                    if (!int.TryParse(CDTextBox.Text.Trim(), out int cd)) cd = 500;
+                    if (!int.TryParse(completedTextBox.Text.Trim(), out int c)) c = 0;
+                    if (!int.TryParse(fetchedTextBox.Text.Trim(), out int f)) f = 0;
+
+                    await WebView.ExecuteScriptAsync($"Runner.RunAsync({rd}, {ed}, {cd}, {c}, {f})");
+                }
+                else
+                {
+                    xlsxFile?.Close();
+                    xlsxFile = null;
+                }
+            };
 
             StartButton.Click += async (_, _) =>
             {
