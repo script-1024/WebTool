@@ -2,6 +2,7 @@
 async function readDataAsync(target, ensureDelay) {
     // 若指定的 `target` 是数字不是物件
     if (TypeChecker.isNumber(target)) target = await getProductCardAsync(target);
+    if (target === null) return null;
 
     const section = target.querySelector('.part-card section');
     const info = section.querySelector('.product-info');
@@ -12,9 +13,9 @@ async function readDataAsync(target, ensureDelay) {
     // 外层数据
     result.id = link.text;
     result.name = info.querySelector('.product-title').textContent;
-    result.description = info.querySelector('.part-description').innerText.replaceAll('• ', '');
-    result.list_price = parseFloat(cost.querySelectorAll('.cost-details .cost-row span')[1].textContent.replace('$', ''));
-    result.your_price = parseFloat(cost.querySelectorAll('.cost-details .cost-row.your-cost span')[1].textContent.replace('$', ''));
+    result.description = info.querySelector('.part-description').innerText.replace('• ', '').replaceAll('\n• ', ', ');
+    result.list_price = parseFloat(cost.querySelectorAll('.cost-details .cost-row span')[1].textContent.replace(/\$|,/g, ''));
+    result.your_price = parseFloat(cost.querySelectorAll('.cost-details .cost-row.your-cost span')[1].textContent.replace(/\$|,/g, ''));
     
     /*
     link.click();
@@ -123,6 +124,8 @@ const Runner = {
         postMsg('ShowProgressBar');
         await main(readDelay, ensureDelay, cycleDelay, completed, fetched);
         if (Runner.TempArray.length > 0) postMsg('WriteToFile', Runner.TempArray);
+
+        await delay(5000); // 等待五秒让用户端有充分时间写入文件
         postMsg('Finished', (Runner.IsProcessKilled !== 0));
     }
 }
