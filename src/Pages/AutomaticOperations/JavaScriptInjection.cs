@@ -10,12 +10,6 @@ namespace WebTool.Pages;
 
 public sealed partial class AutomaticOperationsPage
 {
-    private struct ReceivedMessage
-    {
-        public string Type { get; set; }
-        public JsonDocument Data { get; set; }
-    }
-
     private async void WebView_NavigationCompletedAsync(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
     {
         // 更新导航栏状态
@@ -90,7 +84,7 @@ public sealed partial class AutomaticOperationsPage
         if (position != mousePosition) WebView_MouseMove(position);
     }
 
-    private void WriteToFile(JsonDocument jsonData)
+    private void WriteToFile(JsonElement jsonData)
     {
         var list = jsonData.Deserialize<List<Dictionary<string, JsonElement>>>(jsonSerializerOptions);
         xlsxFile.AppendData(list);
@@ -104,14 +98,24 @@ public sealed partial class AutomaticOperationsPage
         PropertyNameCaseInsensitive = true
     };
 
+    private Point mousePosition = new(0, 0);
+
+    #endregion
+
+    #region DataPackageType
+
+    private struct ReceivedMessage
+    {
+        public string Type { get; set; }
+        public JsonElement Data { get; set; }
+    }
+
     private struct ProgressInfo
     {
         public double Current { get; set; }
         public double Total { get; set; }
         public double Completed { get; set; }
     }
-
-    private Point mousePosition = new(0, 0);
 
     #endregion
 }
