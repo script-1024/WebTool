@@ -1,5 +1,13 @@
 const dbgHelper = {
-    postMsg: {useWhiteList: false, blockList: ['MouseEvent']}
+    postMsg: {
+        useWhiteList: false,
+        blockList: [
+            'MouseEvent',
+            'ShowProgressBar',
+            'HideProgressBar',
+            'UpdateProgressBar'
+        ]
+    }
 };
 
 function postMsg(type, data) {

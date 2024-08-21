@@ -26,7 +26,15 @@ public sealed partial class AutomaticOperationsPage
         // 包含一些实用函数，并检测鼠标移动
         string script = @"
             const dbgHelper = {
-                postMsg: {useWhiteList: false, blockList: ['MouseEvent']}
+                postMsg: {
+                    useWhiteList: false,
+                    blockList: [
+                        'MouseEvent',
+                        'ShowProgressBar',
+                        'HideProgressBar',
+                        'UpdateProgressBar'
+                    ]
+                }
             };
 
             function postMsg(type, data) {
