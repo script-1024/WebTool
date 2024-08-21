@@ -83,9 +83,9 @@ namespace WebTool.Pages
             GoHomeButton.Click += (_, _) => WebView.Source = HOME_URI;
             UseDefaultButton.Click += (_, _) =>
             {
-                RDTextBox.Text = "800";
-                EDTextBox.Text = "200";
-                CDTextBox.Text = "1000";
+                RDTextBox.Text = "500";
+                EDTextBox.Text = "250";
+                CDTextBox.Text = "500";
             };
 
             SkipButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"Runner.Skip()");
@@ -109,8 +109,11 @@ namespace WebTool.Pages
                 }
                 while (File.Exists(path));
 
+                // 保存旧文件
+                xlsxFile?.SaveAndClose();
+
                 // 创建新文件
-                xlsxFile = new XlsxFile(path, "product_list");
+                xlsxFile = XlsxFile.Create(path, "product_list");
 
                 await WebView.ExecuteScriptAsync($"Runner.RunAsync({rd}, {ed}, {cd})");
             };
