@@ -41,25 +41,23 @@ async function getAllDataAsync(readDelay, ensureDelay, startIndex) {
     const count = getItemCount();
     if (Runner.IsProcessKilled == 1) Runner.IsProcessKilled = 0;
 
-    let tempArry = [];
     for (let i=startIndex; i<count; i++) {
         if (Runner.IsProcessKilled >= 1) break;
-        Runner.LastRun.Fetched = i;
+        Runner.Fetched = i;
 
         let data = await readDataAsync(i, ensureDelay);
         if (TypeChecker.isNull(data)) break;
 
-        if (tempArry.length < 100) tempArry.push(data);
+        if (Runner.TempArray.length < Runner.Capacity) Runner.TempArray.push(data);
         else {
-            postMessage('WriteToFile', tempArry);
-            tempArry.length = 0; // 清空数组
+            postMsg('WriteToFile', Runner.TempArray);
+            Runner.TempArray.length = 0; // 清空数组
         }
 
-        console.log(`Fetched: ${i + 1}/${count}, Completed: ${Runner.LastRun.Completed}`);
+        postMsg('UpdateProgressBar', {Current: (i + 1), Total: count, Completed: Runner.Completed});
+        console.log(`Fetched: ${i + 1}/${count}, Completed: ${Runner.Completed}`);
         await delay(readDelay);
     }
-
-    if (tempArry.length > 0) postMessage('WriteToFile', tempArry);
 }
 
 /* 自动化脚本主函数，将依照 search_list 进行搜索和抓取数据 */
@@ -69,7 +67,7 @@ async function main(readDelay, ensureDelay, cycleDelay, completed = 0, fetched =
 
         // 进行搜索
         if (getCurrentKeyword() !== Runner.SearchList[i]) search(Runner.SearchList[i]);
-        Runner.LastRun.Completed = i;
+        Runner.Completed = i;
 
         // 确保加载完成
         if (!await ensureLoadedAsync(ensureDelay)) break;
@@ -99,12 +97,11 @@ const Runner = {
     // 若不指定延时则使用预设值 1000 毫秒
     DefaultDelay: 1000,
 
-    // 运行结果
-    LastRun: {
-        Fetched: 0,
-        Completed: 0,
-        rd: 0, ed: 0, cd: 0, thisPageOnly: false
-    },
+    // 暫存结果
+    Capacity: 25,
+    TempArray: [],
+    Fetched: 0,
+    Completed: 0,
 
     // 函数 跳过、中止、恢复、开始
     Skip: () => {
@@ -115,31 +112,17 @@ const Runner = {
         Runner.IsProcessKilled = 2;
         closeAllDialogAsync();
     },
-    Resume: () => {
-        let lastRun = Runner.LastRun;
-        if (lastRun === undefined) return;
-
-        postMessage('ResumeFile');
-        if (lastRun.thisPageOnly) Runner.GetThisPage(lastRun.rd, lastRun.ed, lastRun.Fetched + 1)
-        else Runner.RunAsync(lastRun.rd, lastRun.ed, lastRun.cd, lastRun.Completed, lastRun.Fetched + 1);
-    },
-    GetThisPage: async (readDelay, ensureDelay, fetched = 0) => {
-        if (!TypeChecker.isNumber(readDelay) || readDelay <= 0) readDelay = Runner.DefaultDelay;
-        if (!TypeChecker.isNumber(ensureDelay) || ensureDelay <= 0) ensureDelay = Runner.DefaultDelay;
-        
-        Runner.IsProcessKilled = 0;
-        Runner.LastRun = {rd: readDelay, ed: ensureDelay, cd: cycleDelay, thisPageOnly: false};
-        await getAllDataAsync(readDelay, ensureDelay, fetched, Runner.Result);
-    },
     RunAsync: async (readDelay, ensureDelay, cycleDelay, completed = 0, fetched = 0) => {
         if (!TypeChecker.isNumber(readDelay) || readDelay <= 0) readDelay = Runner.DefaultDelay;
         if (!TypeChecker.isNumber(ensureDelay) || ensureDelay <= 0) ensureDelay = Runner.DefaultDelay;
         if (!TypeChecker.isNumber(cycleDelay) || cycleDelay <= 0) cycleDelay = Runner.DefaultDelay;
 
+        Runner.TempArray = [];
         Runner.IsProcessKilled = 0;
-        Runner.LastRun = {rd: readDelay, ed: ensureDelay, cd: cycleDelay, thisPageOnly: false};
-        await main(readDelay, ensureDelay, cycleDelay, completed, fetched, Runner.Result);
 
-        postMessage('SaveFile');
+        postMsg('ShowProgressBar');
+        await main(readDelay, ensureDelay, cycleDelay, completed, fetched);
+        if (Runner.TempArray.length > 0) postMsg('WriteToFile', Runner.TempArray);
+        postMsg('Finished', (Runner.IsProcessKilled !== 0));
     }
 }
