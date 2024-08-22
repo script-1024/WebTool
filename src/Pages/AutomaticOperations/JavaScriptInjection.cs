@@ -90,7 +90,7 @@ public sealed partial class AutomaticOperationsPage
                 break;
 
             case "Finished":
-                xlsxFile?.SaveAndClose();
+                xlsxFile?.SaveAndCloseAsync();
                 xlsxFile = null;
                 break;
         }

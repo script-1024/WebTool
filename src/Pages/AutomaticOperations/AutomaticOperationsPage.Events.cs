@@ -22,7 +22,7 @@ public sealed partial class AutomaticOperationsPage
     private void Window_Closing(object sender, WindowClosingEventArgs e)
     {
         App.MainWindow.Closing -= Window_Closing;
-        xlsxFile?.SaveAndClose();
+        xlsxFile?.SaveAndCloseAsync();
         xlsxFile = null;
         e.TryCancel();
     }

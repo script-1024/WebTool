@@ -112,7 +112,7 @@ namespace WebTool.Pages
                 if (xlsxFile != null)
                 {
                     await Task.Delay(15000);
-                    xlsxFile?.SaveAndClose();
+                    xlsxFile?.SaveAndCloseAsync();
                     xlsxFile = null;
                 }
             };
@@ -178,7 +178,7 @@ namespace WebTool.Pages
                     picker.FileTypeFilter.Add(".xlsx");
 
                     // 选择文件
-                    xlsxFile?.SaveAndClose();
+                    xlsxFile?.SaveAndCloseAsync();
                     StorageFile file = await picker.PickSingleFileAsync();
                     if (file != null)
                     {
@@ -224,7 +224,7 @@ namespace WebTool.Pages
                 while (File.Exists(path));
 
                 // 保存旧文件
-                xlsxFile?.SaveAndClose();
+                xlsxFile?.SaveAndCloseAsync();
 
                 // 创建新文件
                 xlsxFile = XlsxFile.Create(path, "product_list");

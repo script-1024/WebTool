@@ -124,8 +124,8 @@ const Runner = {
         postMsg('ShowProgressBar');
         await main(readDelay, ensureDelay, cycleDelay, completed, fetched);
         if (Runner.TempArray.length > 0) postMsg('WriteToFile', Runner.TempArray);
-
-        await delay(5000); // 等待五秒让用户端有充分时间写入文件
+        
+        await delay(500);
         postMsg('Finished', (Runner.IsProcessKilled !== 0));
     }
 }

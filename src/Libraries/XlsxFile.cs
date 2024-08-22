@@ -1,10 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using ClosedXML.Excel;
-using System.IO;
-using System.IO.Pipes;
 
 namespace WebTool.Lib.IO;
 
@@ -14,8 +14,9 @@ public class XlsxFile : IDisposable
     private readonly List<string> _headerList;
     private IXLWorksheet _worksheet;
     private FileStream _fileStream;
-    private int _currentRow;
     private bool _disposed = false;
+    private bool _writing = false;
+    private int _currentRow;
 
     private XlsxFile(FileStream fileStream, IXLWorksheet worksheet, List<string> headerList, int currentRow)
     {
@@ -107,6 +108,7 @@ public class XlsxFile : IDisposable
     public void AppendData(List<Dictionary<string, JsonElement>> dataList)
     {
         if (_disposed) return;
+        _writing = true;
 
         foreach (var data in dataList)
         {
@@ -141,6 +143,8 @@ public class XlsxFile : IDisposable
             // 数据写入后，当前行下移一行
             _currentRow++;
         }
+
+        _writing = false;
     }
 
     /// <summary>
@@ -184,13 +188,19 @@ public class XlsxFile : IDisposable
     /// <summary>
     /// 保存并关闭文件
     /// </summary>
-    public void SaveAndClose()
+    public async void SaveAndCloseAsync()
     {
         if (_disposed) return;
+
+        int retries = 0, maxRetries = 60;
+        while (_writing && retries++ < maxRetries)
+        {
+            // 若正在写入数据就等待 3 秒再检查
+            await Task.Delay(3000);
+        }
+
         _workbook.Save();
-        _workbook.Dispose(); // 释放资源
-        _fileStream.Close(); // 释放文件流
-        _disposed = true;
+        Close();
     }
 
     /// <summary>
@@ -209,7 +219,7 @@ public class XlsxFile : IDisposable
     public void Close()
     {
         if (_disposed) return;
-        _workbook.Dispose();
+        _workbook.Dispose(); // 释放资源
         _fileStream.Close(); // 释放文件流
         _disposed = true;
     }
@@ -218,7 +228,7 @@ public class XlsxFile : IDisposable
     public void Dispose()
     {
         if (_disposed) return;
-        SaveAndClose();
+        SaveAndCloseAsync();
         GC.SuppressFinalize(this);
     }
 
