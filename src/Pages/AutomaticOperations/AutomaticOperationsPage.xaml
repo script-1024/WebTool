@@ -27,6 +27,7 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
@@ -34,8 +35,9 @@
             <AppBarButton x:Name="GoBackButton" Grid.Column="0" Icon="{ui:FontIcon Glyph=&#xE72B;}" CornerRadius="20" Width="40" Margin="8, 1, 0, -15" IsCompact="True" IsEnabled="False"/>
             <AppBarButton x:Name="GoForwardButton" Grid.Column="1" Icon="{ui:FontIcon Glyph=&#xE72A;}" CornerRadius="20" Width="40" Margin="4, 1, 0, -15" IsCompact="True" IsEnabled="False"/>
             <AppBarButton x:Name="ReloadButton" Grid.Column="2" Icon="{ui:FontIcon Glyph=&#xE72C;}" CornerRadius="20" Width="40" Margin="4, 1, 0, -15" IsCompact="True"/>
-            <TextBox x:Name="UriTextBox" Grid.Column="3" CornerRadius="15" Margin="8, 1, 4, 1" VerticalAlignment="Center"/>
-            <AppBarToggleButton x:Name="OpenPanelButton" Grid.Column="4" Icon="{ui:FontIcon Glyph=&#xE712;}" CornerRadius="20" Width="40" Margin="4, 1, 4, -15" IsCompact="True"/>
+            <AppBarButton x:Name="GoHomeButton" Grid.Column="3" Icon="{ui:FontIcon Glyph=&#xE80F;}" CornerRadius="20" Width="40" Margin="4, 1, 0, -15" IsCompact="True"/>
+            <TextBox x:Name="UriTextBox" Grid.Column="4" CornerRadius="15" Margin="8, 1, 4, 1" VerticalAlignment="Center"/>
+            <AppBarToggleButton x:Name="OpenPanelButton" Grid.Column="5" Icon="{ui:FontIcon Glyph=&#xE712;}" CornerRadius="20" Width="40" Margin="4, 1, 4, -15" IsCompact="True"/>
         </Grid>
         
         <WebView2 x:Name="WebView" Grid.Row="1" Grid.Column="0" Source="about:blank"/>
@@ -69,7 +71,6 @@
             <Border Margin="0, 24" BorderThickness="1" BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"/>
 
             <StackPanel Orientation="Horizontal">
-                <Button x:Name="GoHomeButton" Content="回到首頁" Margin="0, 0, 4, 0"/>
                 <Button x:Name="UseDefaultButton" Content="使用預設值" Margin="4, 0, 0, 0"/>
             </StackPanel>
             <!-- 后续版本删除 -->

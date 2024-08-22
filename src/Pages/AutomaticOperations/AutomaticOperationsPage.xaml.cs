@@ -41,6 +41,18 @@ namespace WebTool.Pages
 
             ReloadButton.Click += (_, _) => WebView.Reload();
 
+            GoHomeButton.Click += (_, _) =>
+            {
+                try
+                {
+                    WebView.Source = new Uri(AppConfig.DefaultUri);
+                }
+                catch (Exception)
+                {
+                    WebView.Source = new Uri("about:blank");
+                }
+            };
+
             OpenPanelButton.Click += (_, _) =>
             {
                 var visible = (bool)OpenPanelButton.IsChecked;
@@ -84,7 +96,7 @@ namespace WebTool.Pages
             WebView.Source = HOME_URI;
 
             SearchButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"search('{SearchBox.Text.Trim()}')");
-            GoHomeButton.Click += (_, _) => WebView.Source = HOME_URI;
+            
             UseDefaultButton.Click += (_, _) =>
             {
                 RDTextBox.Text = "500";
