@@ -4,29 +4,32 @@ using Windows.Storage;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Composition.SystemBackdrops;
+using WebTool.Lib;
 
 namespace WebTool
 {
     public partial class App : Application
     {
-        public static readonly string SpecificDirectory = @"%USERPROFILE%\Documents\WebTool";
-        public static readonly string FullVersion = "Beta 1.1/odkst build 0820";
-        public static readonly string ShortVersion = "1.1";
-        public static readonly string Language = "zh-TW";
+        public static string WorkingDirectory { get; private set; } = @"%USERPROFILE%\Documents\WebTool";
+        public static string FullVersion { get; private set; } = "Beta 1.2/odkst build 0822";
+        public static string ShortVersion { get; private set; } = "1.2";
+        public static string Language { get; private set; } = "zh-TW";
 
         public App()
         {
             this.InitializeComponent();
             Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", $"--lang={Language}");
 
-            var path = Environment.ExpandEnvironmentVariables(SpecificDirectory);
+            var expandedPath = Environment.ExpandEnvironmentVariables(WorkingDirectory);
 
             // 应用专用目录
-            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-            Directory.SetCurrentDirectory(path);
+            if (!Directory.Exists(expandedPath)) Directory.CreateDirectory(expandedPath);
+            Directory.SetCurrentDirectory(expandedPath);
             Directory.CreateDirectory("Config");
             Directory.CreateDirectory("Downloads");
             Directory.CreateDirectory("Scripts");
+
+            WorkingDirectory = expandedPath;
         }
 
         /// <summary>
@@ -34,13 +37,18 @@ namespace WebTool
         /// </summary>
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
+            // 窗口实例
             m_window = new MainWindow();
 
             // 还原应用设置
             ElementTheme = GetAppData("RequestedTheme", ElementTheme.Default);
             Backdrop = GetAppData("AppBackdrop", AppBackdrop.Mica);
 
+            // 呼出主窗口
             m_window.Activate();
+
+            // 加载配置文件
+            AppConfig.Reload();
         }
 
         public static void RemoveAppData(string key)
@@ -61,8 +69,6 @@ namespace WebTool
             return value is null ? fallbackValue : (T)value;
         }
 
-        private static Window m_window;
-
         public static new App Current
         {
             get => Application.Current as App;
@@ -76,8 +82,6 @@ namespace WebTool
         public delegate void ThemeChangedEvent(ElementTheme theme);
 
         public static event ThemeChangedEvent ThemeChanged;
-
-        private static ElementTheme m_theme;
 
         public static ElementTheme ElementTheme
         {
@@ -97,8 +101,6 @@ namespace WebTool
         public static readonly DesktopAcrylicBackdrop AcrylicBackdrop = new();
 
         public enum AppBackdrop { Mica, MicaALt, Acrylic };
-
-        private static AppBackdrop m_backdrop;
 
         public static AppBackdrop Backdrop
         {
@@ -121,5 +123,13 @@ namespace WebTool
                 }
             }
         }
+
+        #region PrivateFields
+
+        private static Window m_window;
+        private static ElementTheme m_theme;
+        private static AppBackdrop m_backdrop;
+
+        #endregion
     }
 }

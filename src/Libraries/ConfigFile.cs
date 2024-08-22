@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Collections.Generic;
 using Microsoft.UI.Xaml;
 
 namespace WebTool.Lib;
@@ -14,35 +16,36 @@ public class ConfigFile
     #endregion
 
     #region Content
-    public string Id { get; set; }
-    public uint Version { get; set; }
-    public string DefaultUri { get; set; }
-    public string[] Scripts { get; set; }
-    public ConfigControl[] Controls { get; set; }
+    public string Id { get; private set; }
+    public uint Version { get; private set; } = 1;
+    public string DefaultUri { get; private set; } = null;
+    public string[] Scripts { get; private set; }
+    //public ConfigControl[] Controls { get; private set; }
     #endregion
 
     public static ConfigFile Read(string path)
     {
-        var file = new ConfigFile() { Content = File.ReadAllText(path) };
-
         try
         {
+            var file = new ConfigFile() { Content = File.ReadAllText(path) };
+
             using var document = JsonDocument.Parse(file.Content);
             file.Root = document.RootElement.Clone();
 
             file.Id = file.Root.GetProperty("id").GetString();
             file.Version = file.Root.GetProperty("version").GetUInt32();
 
-            file.Root.TryGetValue("default_uri", (e) => file.DefaultUri = e.GetString());
+            file.Root.TryGetValue("default_uri", (elem) => file.DefaultUri = elem.GetString(), JsonValueKind.String);
             
-            file.Root.TryGetValue("scripts", (e) =>
+            file.Root.TryGetValue("scripts", (elem) =>
             {
-                int i = 0, len = e.GetArrayLength();
-                var arr = e.EnumerateArray();
+                int i = 0, len = elem.GetArrayLength();
+                var arr = elem.EnumerateArray();
                 file.Scripts = new string[len];
                 foreach (var item in arr) file.Scripts[i++] = item.GetString();
             }, JsonValueKind.Array);
 
+            /*
             file.Root.TryGetValue("controls", (e) =>
             {
                 int i = 0, len = e.GetArrayLength();
@@ -50,15 +53,17 @@ public class ConfigFile
                 file.Controls = new ConfigControl[len];
                 foreach (var item in arr) file.Controls[i++] = ParseControl(item);
             }, JsonValueKind.Array);
+            */
+
+            return file;
         }
         catch (Exception)
         {
             return null;
         }
-
-        return file;
     }
 
+    /*
     public static ConfigControl ParseControl(JsonElement element)
     {
         if (element.ValueKind != JsonValueKind.Object) throw new InvalidDataException();
@@ -79,8 +84,90 @@ public class ConfigFile
 
         return control;
     }
+    */
 }
 
+public static class AppConfig
+{
+    #region Properties
+    public static string DefaultUri { get; internal set; } = null;
+    public static List<string> LoadedId { get; private set; } = [];
+    public static List<string> UsedScripts { get; private set; } = [];
+    public static List<string> LoadedFiles { get; private set; } = [];
+    public static List<string> BlockedFiles { get; private set; } = [];
+    #endregion
+
+    public delegate void ConfigReloadedEvent();
+    public static event ConfigReloadedEvent Reloaded;
+
+    public static void ClearAll()
+    {
+        DefaultUri = null;
+        LoadedFiles.Clear();
+        LoadedId.Clear();
+        UsedScripts.Clear();
+    }
+
+    public static void Reload()
+    {
+        DefaultUri = null;
+        UsedScripts.Clear();
+        LoadedId.Clear();
+
+        static void RemoveInvalidFile(string filename)
+        {
+            LoadedFiles.Remove(filename);
+            BlockedFiles.Remove(filename);
+        }
+
+        static void RegisterNewConfigFile(ConfigFile configFile)
+        {
+            LoadedId.Add(configFile.Id);
+            DefaultUri ??= configFile.DefaultUri;
+            UsedScripts.AddRange(configFile.Scripts.Where(str => !UsedScripts.Contains(str)));
+        }
+
+        // 先尝试读取已加载过的文件
+        foreach (var file in LoadedFiles)
+        {
+            if (File.Exists(file))
+            {
+                if (BlockedFiles.Contains(file)) continue;
+
+                var configFile = ConfigFile.Read(file);
+                if (configFile is null)
+                {
+                    RemoveInvalidFile(file);
+                    continue;
+                }
+
+                RegisterNewConfigFile(configFile);
+            }
+            else RemoveInvalidFile(file);
+        }
+
+        // 再加载新的配置文件
+        var files = Directory.EnumerateFiles("Config");
+        foreach (var filename in files)
+        {
+            if (LoadedFiles.Contains(filename)) continue;
+
+            var configFile = ConfigFile.Read(filename);
+            if (configFile is null) continue;
+
+            // 使用相同 ID 的文件将被忽略
+            if (LoadedId.Contains(configFile.Id)) continue;
+
+            LoadedFiles.Add(filename);
+            RegisterNewConfigFile(configFile);
+        }
+
+        // 通知订阅者
+        Reloaded?.Invoke();
+    }
+}
+
+/*
 public class ConfigControl
 {
     public enum ControlType { Label, Button, Panel, InputBox, CheckBox }
@@ -117,7 +204,9 @@ public class ConfigControl
     public bool IsChecked { get; set; }
     #endregion
 }
+*/
 
+/*
 public struct ButtonAction
 {
     public string Type { get; set; }
@@ -125,3 +214,4 @@ public struct ButtonAction
     public string[] Args { get; set; }
     public string Script { get; set; }
 }
+*/

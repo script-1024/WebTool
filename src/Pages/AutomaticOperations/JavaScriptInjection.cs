@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -45,6 +46,14 @@ public sealed partial class AutomaticOperationsPage
             });";
 
         await WebView.ExecuteScriptAsync(script);
+
+        foreach (var file in AppConfig.UsedScripts)
+        {
+            var path = @$"Scripts\{file}";
+            if (!File.Exists(path)) continue;
+            script = File.ReadAllText(path);
+            await WebView.ExecuteScriptAsync(script);
+        }
     }
 
     private void CoreWebView2_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)

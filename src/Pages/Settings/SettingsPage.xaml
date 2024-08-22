@@ -8,41 +8,41 @@
     xmlns:local="using:WebTool.Controls"
     NavigationCacheMode="Required">
 
+    <Page.Resources>
+        <ResourceDictionary>
+            <Style TargetType="ctrl:SettingsCard">
+                <Setter Property="Margin" Value="0, 2"/>
+            </Style>
+            <Style TargetType="Expander">
+                <Setter Property="Margin" Value="0, 2"/>
+                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                <Setter Property="Padding" Value="0"/>
+            </Style>
+            <Style x:Key="ExpanderInfoBar" TargetType="InfoBar">
+                <Setter Property="Margin" Value="0"/>
+                <Setter Property="IsOpen" Value="True"/>
+                <Setter Property="IsClosable" Value="False"/>
+                <Setter Property="CornerRadius" Value="0"/>
+                <Setter Property="BorderThickness" Value="0"/>
+            </Style>
+            <Style x:Key="ExpanderContentCard" TargetType="ctrl:SettingsCard">
+                <Setter Property="Margin" Value="0"/>
+                <Setter Property="CornerRadius" Value="0"/>
+                <Setter Property="BorderThickness" Value="0, 1, 0, 0"/>
+            </Style>
+            <Style x:Key="ExpanderClickableContentCard" TargetType="ctrl:SettingsCard">
+                <Setter Property="Margin" Value="0"/>
+                <Setter Property="CornerRadius" Value="0"/>
+                <Setter Property="IsClickEnabled" Value="True"/>
+                <Setter Property="BorderThickness" Value="0, 1, 0, 0"/>
+            </Style>
+        </ResourceDictionary>
+    </Page.Resources>
+    
     <ScrollViewer>
         <StackPanel x:Name="RootPanel" Padding="36">
-            <StackPanel.Resources>
-                <ResourceDictionary>
-                    <Style TargetType="ctrl:SettingsCard">
-                        <Setter Property="Margin" Value="0, 2"/>
-                    </Style>
-                    <Style TargetType="Expander">
-                        <Setter Property="Margin" Value="0, 2"/>
-                        <Setter Property="HorizontalAlignment" Value="Stretch"/>
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
-                        <Setter Property="Padding" Value="0"/>
-                    </Style>
-                    <Style x:Key="ExpanderInfoBar" TargetType="InfoBar">
-                        <Setter Property="Margin" Value="0"/>
-                        <Setter Property="IsOpen" Value="True"/>
-                        <Setter Property="IsClosable" Value="False"/>
-                        <Setter Property="CornerRadius" Value="0"/>
-                        <Setter Property="BorderThickness" Value="0"/>
-                    </Style>
-                    <Style x:Key="ExpanderContentCard" TargetType="ctrl:SettingsCard">
-                        <Setter Property="Margin" Value="0"/>
-                        <Setter Property="CornerRadius" Value="0"/>
-                        <Setter Property="BorderThickness" Value="0, 1, 0, 0"/>
-                    </Style>
-                    <Style x:Key="ExpanderClickableContentCard" TargetType="ctrl:SettingsCard">
-                        <Setter Property="Margin" Value="0"/>
-                        <Setter Property="CornerRadius" Value="0"/>
-                        <Setter Property="IsClickEnabled" Value="True"/>
-                        <Setter Property="BorderThickness" Value="0, 1, 0, 0"/>
-                    </Style>
-                </ResourceDictionary>
-            </StackPanel.Resources>
-
             <TextBlock Text="設定" FontSize="36" Margin="0, 4, 0, 24"/>
 
             <ctrl:SettingsCard
@@ -79,18 +79,29 @@
 
             <Expander HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Padding="0">
                 <Expander.Header>
-                    <local:HeaderedContentControl
-                        Header="配置文件" Description="更改應用程式使用的設定檔"
-                        Icon="{ui:FontIcon Glyph=&#xE74C;}"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <local:HeaderedContentControl
+                            Grid.Column="0" Header="配置文件"
+                            Description="更改應用程式使用的設定檔"
+                            Icon="{ui:FontIcon Glyph=&#xE74C;}"/>
+
+                        <ProgressRing x:Name="LoadingProgressRing" Grid.Column="1" Margin="0, 1, 16, 0" HorizontalAlignment="Right" Visibility="Collapsed"/>
+                        <Button x:Name="ReloadConfigButton" Grid.Column="2" Margin="0, 0, -9, 0" Content="刷新列表" HorizontalAlignment="Right"/>
+                    </Grid>
+                    
                 </Expander.Header>
 
                 <Expander.Content>
-                    <StackPanel>
+                    <StackPanel x:Name="ConfigPanel">
                         <ctrl:SettingsCard x:Name="OpenConfigClickableCard" Style="{ThemeResource ExpanderClickableContentCard}">
                             <ctrl:SettingsCard.Header>
-                                <local:HeaderedContentControl
-                                    Margin="20, 0"
-                                    Header="前往配置文件保存目錄"/>
+                                <local:HeaderedContentControl Margin="20, 0" Header="前往配置文件保存目錄"/>
                             </ctrl:SettingsCard.Header>
                         </ctrl:SettingsCard>
                     </StackPanel>
