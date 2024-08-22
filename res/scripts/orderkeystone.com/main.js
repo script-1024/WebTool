@@ -39,12 +39,14 @@ async function readDataAsync(target, ensureDelay) {
 
 /* 获取当前页面所有物品的数据 */
 async function getAllDataAsync(readDelay, ensureDelay, startIndex) {
-    const count = getItemCount();
+    const count = getTotalItemCount();
     if (Runner.IsProcessKilled == 1) Runner.IsProcessKilled = 0;
 
     for (let i=startIndex; i<count; i++) {
         if (Runner.IsProcessKilled >= 1) break;
         Runner.Fetched = i;
+
+        postMsg('UpdateProgressBar', {Current: i, Total: count, Completed: Runner.Completed, IconGlyph: '\uEBD3'});
 
         let data = await readDataAsync(i, ensureDelay);
         if (TypeChecker.isNull(data)) break;
@@ -55,7 +57,6 @@ async function getAllDataAsync(readDelay, ensureDelay, startIndex) {
             Runner.TempArray.length = 0; // 清空数组
         }
 
-        postMsg('UpdateProgressBar', {Current: (i + 1), Total: count, Completed: Runner.Completed});
         console.log(`Fetched: ${i + 1}/${count}, Completed: ${Runner.Completed}`);
         await delay(readDelay);
     }
@@ -99,7 +100,7 @@ const Runner = {
     DefaultDelay: 1000,
 
     // 暫存结果
-    Capacity: 25,
+    Capacity: 10,
     TempArray: [],
     Fetched: 0,
     Completed: 0,
@@ -125,7 +126,7 @@ const Runner = {
         await main(readDelay, ensureDelay, cycleDelay, completed, fetched);
         if (Runner.TempArray.length > 0) postMsg('WriteToFile', Runner.TempArray);
         
-        await delay(500);
+        await delay(3000);
         postMsg('Finished', (Runner.IsProcessKilled !== 0));
     }
 }

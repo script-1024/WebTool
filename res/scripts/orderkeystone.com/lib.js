@@ -42,10 +42,14 @@ function getContainer() {
     return document.getElementById('search-results-container');
 }
 
-function getItemCount() {
+function getTotalItemCount() {
     const resultText = document.querySelector('.results-text');
     const count = parseInt(resultText?.getElementsByTagName('span')[1].textContent);
     return isNaN(count) ? 0 : count;
+}
+
+function getCurrentItemCount() {
+    return document.getElementsByTagName('app-product-card').length;
 }
 
 function getCurrentKeyword() {
@@ -54,20 +58,22 @@ function getCurrentKeyword() {
 }
 
 async function getProductCardAsync(index) {
-    const count = getItemCount();
+    const totalCount = getTotalItemCount();
     const container = getContainer();
-    if (index >= count) return null;
+    if (index >= totalCount) return null;
 
-    let card = document.getElementsByTagName('app-product-card')[index];
+    let itemCount = getCurrentItemCount();
 
-    while (TypeChecker.isUndefined(card)) {
+    while (index >= itemCount) {
+        postMsg('UpdateProgressBar', {Current: itemCount, Total: totalCount, Completed: Runner.Completed, IconGlyph: '\uEDE4'});
         container.scrollTo(0, container.scrollHeight - 600);
-        await delay(500);
+        await delay(800);
         container.scrollTo(0, container.scrollHeight);
-        if (!await ensureLoadedAsync(500)) return null;
-        card = document.getElementsByTagName('app-product-card')[index];
+        if (!await ensureLoadedAsync(800)) return null;
+        itemCount = getCurrentItemCount();
     }
 
+    let card = document.getElementsByTagName('app-product-card')[index];
     const position = getRelativePosition(card, container);
     container.scrollTo(0, position.y);
     return card;
