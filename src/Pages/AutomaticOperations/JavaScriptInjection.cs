@@ -51,43 +51,40 @@ public sealed partial class AutomaticOperationsPage
     {
         // 解析 JavaScript 发送回来的消息
         var msg = JsonSerializer.Deserialize<ReceivedMessage>(e.WebMessageAsJson, jsonSerializerOptions);
-        
-        // 异步处理事件，不阻塞消息接收
-        Task.Run(() =>
+
+        switch (msg.Type)
         {
-            switch (msg.Type)
-            {
-                case "MouseEvent":
-                    var position = msg.Data.Deserialize<Point>(jsonSerializerOptions);
-                    UpdateMousePosition(position);
-                    break;
+            case "MouseEvent":
+                var position = msg.Data.Deserialize<Point>(jsonSerializerOptions);
+                UpdateMousePosition(position);
+                break;
 
-                case "ShowProgressBar":
-                case "HideProgressBar":
-                    ProgressPanel.SetVisibility(msg.Type[0..4] == "Show");
-                    break;
+            case "ShowProgressBar":
+            case "HideProgressBar":
+                ProgressPanel.SetVisibility(msg.Type[0..4] == "Show");
+                break;
 
-                case "UpdateProgressBar":
-                    var info = msg.Data.Deserialize<ProgressInfo>(jsonSerializerOptions);
-                    ProgressCompletedLabel.Text = $"{info.Completed}";
-                    ProgressDetailLabel.Text = $"{info.Current}/{info.Total}";
-                    ProgressDetailBar.Value = info.Current / info.Total * 100;
-                    break;
+            case "UpdateProgressBar":
+                var info = msg.Data.Deserialize<ProgressInfo>(jsonSerializerOptions);
+                ProgressCompletedLabel.Text = $"{info.Completed}";
+                ProgressDetailLabel.Text = $"{info.Current}/{info.Total}";
+                ProgressDetailBar.Value = info.Current / info.Total * 100;
+                break;
 
-                case "WriteToFile":
-                    if (xlsxFile != null)
-                    {
-                        WriteToFile(msg.Data);
-                        xlsxFile.Save();
-                    }
-                    break;
+            case "WriteToFile":
+                // 异步处理事件，不阻塞消息接收
+                if (xlsxFile != null) Task.Run(() =>
+                {
+                    WriteToFile(msg.Data);
+                    xlsxFile.Save();
+                });
+                break;
 
-                case "Finished":
-                    xlsxFile?.SaveAndClose();
-                    xlsxFile = null;
-                    break;
-            }
-        });
+            case "Finished":
+                xlsxFile?.SaveAndClose();
+                xlsxFile = null;
+                break;
+        }
     }
 
     private void UpdateMousePosition(Point position)
