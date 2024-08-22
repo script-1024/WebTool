@@ -20,7 +20,9 @@ public static class JsonHelper
     }
 
     /// <summary>
-    /// 尝试从 JsonElement 取值，成功时执行特定动作。若明确指定了值类型且取得结果不符合，将抛出 InvalidDataException
+    /// 尝试从 <see cref="JsonElement"/> 取值，成功时执行特定动作。
+    /// <br/>
+    /// 若明确指定了值类型但与取得结果不符合，将抛出 <see cref="InvalidDataException"/>
     /// </summary>
     /// <param name="element">来源</param>
     /// <param name="key">键名</param>
