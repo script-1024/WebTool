@@ -122,7 +122,7 @@ namespace WebTool.Pages
                 xlsxFile?.SaveAndCloseAsync();
                 xlsxFile = null;
 
-                ShowTip(new() { Title = "操作提示", Content = "腳本未在容許時限內關閉文件，\n已由客戶端主動關閉", IsLightDismiss = true });
+                if (retries >= maxRetries) ShowTip(new() { Title = "操作提示", Content = "腳本未在容許時限內關閉文件，\n已由客戶端主動關閉", IsLightDismiss = true });
 
                 ProgressDetailBar.IsIndeterminate = false;
             };
