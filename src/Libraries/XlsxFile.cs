@@ -102,49 +102,59 @@ public class XlsxFile : IDisposable
     }
 
     /// <summary>
-    /// 添加数据
+    /// 从字典列表添加数据，每个列表元素的所有键值都会分别对应到表头和单元格
     /// </summary>
-    /// <param name="dataList">一个字典列表，每个列表元素的所有键值都会分别对应到表头和单元格</param>
     public void AppendData(List<Dictionary<string, JsonElement>> dataList)
+    {
+        if (_disposed) return;
+        foreach (var data in dataList) AppendData(data, preventClose: true);
+        _writing = false;
+    }
+
+    /// <summary>
+    /// 从字典添加数据，所有键值都会分别对应到表头和单元格
+    /// </summary>
+    public void AppendData(Dictionary<string, JsonElement> data) => AppendData(data, preventClose: false);
+
+    /// <summary>
+    /// 私有方法，从字典添加数据
+    /// </summary>
+    private void AppendData(Dictionary<string, JsonElement> data, bool preventClose)
     {
         if (_disposed) return;
         _writing = true;
 
-        foreach (var data in dataList)
+        foreach (var key in data.Keys)
         {
-            foreach (var key in data.Keys)
+            // 如果表头中不存在该键，添加到表头
+            if (!_headerList.Contains(key))
             {
-                // 如果表头中不存在该键，添加到表头
-                if (!_headerList.Contains(key))
-                {
-                    _headerList.Add(key);
+                _headerList.Add(key);
 
-                    var cell = _worksheet.Cell(1, _headerList.Count);
+                var cell = _worksheet.Cell(1, _headerList.Count);
 
-                    cell.Value = key;
-                    cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#B7DEE8");
-                    cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                    cell.Style.Font.FontSize = 14;
-                }
+                cell.Value = key;
+                cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#B7DEE8");
+                cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                cell.Style.Font.FontSize = 14;
             }
-
-            // 根据当前表头顺序写入数据
-            for (int i = 0; i < _headerList.Count; i++)
-            {
-                var key = _headerList[i];
-                var cell = _worksheet.Cell(_currentRow, i + 1);
-
-                cell.Value = (!data.TryGetValue(key, out JsonElement value) || !value.TryGetItemValue(out object val))
-                    ? string.Empty
-                    : XLCellValue.FromObject(val);
-            }
-
-            // 数据写入后，当前行下移一行
-            _currentRow++;
         }
 
-        _writing = false;
+        // 根据当前表头顺序写入数据
+        for (int i = 0; i < _headerList.Count; i++)
+        {
+            var key = _headerList[i];
+            var cell = _worksheet.Cell(_currentRow, i + 1);
+
+            cell.Value = (data.TryGetValue(key, out JsonElement value) && value.TryGetItemValue(out object val))
+                ? XLCellValue.FromObject(val) : string.Empty;
+        }
+
+        // 数据写入后，当前行下移一行
+        _currentRow++;
+
+        if (!preventClose) _writing = false;
     }
 
     /// <summary>
