@@ -1,14 +1,14 @@
 ﻿using System;
 using System.IO;
 using System.Web;
+using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 using WebTool.Lib;
 using WebTool.Lib.IO;
-using Windows.Storage.Pickers;
-using Windows.Storage;
-using System.Threading.Tasks;
 
 namespace WebTool.Pages
 {
@@ -30,6 +30,7 @@ namespace WebTool.Pages
             // 应用程序事件
             App.ThemeChanged += App_ThemeChanged;
             App.MainWindow.Closing += Window_Closing;
+            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
 
             // 按键导航事件
             UriTextBox.KeyDown += UriTextBox_KeyDown;
@@ -57,7 +58,6 @@ namespace WebTool.Pages
             {
                 var visible = (bool)OpenPanelButton.IsChecked;
                 AdvancedPanel.SetVisibility(visible);
-                //Splitter.Visibility = AdvancedPanel.SetVisibility(visible);
                 
                 // 重置列宽度
                 var colDef = RootGrid.ColumnDefinitions[1];
@@ -83,8 +83,10 @@ namespace WebTool.Pages
             // 负责处理从 JavaScript 传回的消息
             // 必须先确保 CoreWebView2 已实例化
             await WebView.EnsureCoreWebView2Async();
-            WebView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
-            WebView.CoreWebView2.Settings.UserAgent =
+            var coreWebView2 = WebView.CoreWebView2;
+
+            coreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
+            coreWebView2.Settings.UserAgent =
                @$"Mozilla/5.0 (Windows NT 10.0; Win64; x64)
                   AppleWebKit/537.36 (KHTML, like Gecko)
                   Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0 WebTool/{App.ShortVersion}";
@@ -95,26 +97,34 @@ namespace WebTool.Pages
             Uri HOME_URI = new("https://portal.lkqcorp.com/login");
             WebView.Source = HOME_URI;
 
-            SearchButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"search('{SearchBox.Text.Trim()}')");
+            SearchButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"OrderKeystone.search('{SearchBox.Text.Trim()}')");
             
             UseDefaultButton.Click += (_, _) =>
             {
-                RDTextBox.Text = "500";
-                EDTextBox.Text = "250";
-                CDTextBox.Text = "500";
+                RDTextBox.Text = "600";
+                EDTextBox.Text = "300";
+                CDTextBox.Text = "1200";
             };
 
-            SkipButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"Runner.Skip()");
+            SkipButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"Runner.skip()");
             
             StopAllButton.Click += async (_, _) =>
             {
-                await WebView.ExecuteScriptAsync($"Runner.StopAll()");
-                if (xlsxFile != null)
-                {
-                    await Task.Delay(15000);
-                    xlsxFile?.SaveAndCloseAsync();
-                    xlsxFile = null;
-                }
+                await WebView.ExecuteScriptAsync($"Runner.stopAll()");
+
+                ShowTip(new() { Title = "網頁通知", Content = "已停止抓取操作", IsLightDismiss = true});
+
+                if (xlsxFile is null) return;
+
+                int retries = 0, maxRetries = 30; // 容许 15 秒内关闭文件
+                while (xlsxFile != null && retries++ < maxRetries) await Task.Delay(500);
+
+                xlsxFile?.SaveAndCloseAsync();
+                xlsxFile = null;
+
+                ShowTip(new() { Title = "操作提示", Content = "腳本未在容許時限內關閉文件，\n已由客戶端主動關閉", IsLightDismiss = true });
+
+                ProgressDetailBar.IsIndeterminate = false;
             };
             
             ResumeButton.Click += async (_, _) =>
@@ -197,7 +207,7 @@ namespace WebTool.Pages
                     if (!int.TryParse(completedTextBox.Text.Trim(), out int c)) c = 0;
                     if (!int.TryParse(fetchedTextBox.Text.Trim(), out int f)) f = 0;
 
-                    await WebView.ExecuteScriptAsync($"Runner.RunAsync({rd}, {ed}, {cd}, {c}, {f})");
+                    await WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd}, {c}, {f})");
                 }
                 else
                 {
@@ -229,7 +239,7 @@ namespace WebTool.Pages
                 // 创建新文件
                 xlsxFile = XlsxFile.Create(path, "product_list");
 
-                await WebView.ExecuteScriptAsync($"Runner.RunAsync({rd}, {ed}, {cd})");
+                await WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd})");
             };
         }
 

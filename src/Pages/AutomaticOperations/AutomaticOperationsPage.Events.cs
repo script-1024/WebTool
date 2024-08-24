@@ -27,7 +27,13 @@ public sealed partial class AutomaticOperationsPage
         e.TryCancel();
     }
 
-    #region "WebView"
+    private void CurrentDomain_ProcessExit(object sender, EventArgs e)
+    {
+        xlsxFile?.SaveAndCloseAsync();
+        xlsxFile = null;
+    }
+
+    #region WebView
 
     /// <summary>
     /// 当鼠标在 WebView 内移动时发生事件

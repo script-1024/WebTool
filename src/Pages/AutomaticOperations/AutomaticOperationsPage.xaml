@@ -46,7 +46,7 @@
                     Visibility="Collapsed" BorderThickness="1, 0, 0, 0" Padding="16"
                     Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}"
                     BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}">
-            
+
             <!-- 后续版本删除 -->
             <StackPanel Orientation="Horizontal">
                 <TextBox x:Name="SearchBox" Header="搜索物品" PlaceholderText="物品 ID" Width="180"/>
@@ -60,7 +60,7 @@
                 <TextBox x:Name="EDTextBox" Header="檢查延時" PlaceholderText="毫秒" Width="75" Margin="8, 0"/>
                 <TextBox x:Name="CDTextBox" Header="循環延時" PlaceholderText="毫秒" Width="75"/>
             </StackPanel>
-            
+
             <StackPanel Orientation="Horizontal" Margin="0, 16, 0, 0">
                 <Button x:Name="StartButton" Content="開始" Margin="0, 0, 4, 0"/>
                 <Button x:Name="SkipButton" Content="跳過" Margin="4, 0"/>
@@ -71,20 +71,11 @@
             <Border Margin="0, 24" BorderThickness="1" BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"/>
 
             <StackPanel Orientation="Horizontal">
-                <Button x:Name="UseDefaultButton" Content="使用預設值" Margin="4, 0, 0, 0"/>
+                <Button x:Name="UseDefaultButton" Content="使用預設值"/>
             </StackPanel>
             <!-- 后续版本删除 -->
 
         </StackPanel>
-
-        <!--
-        <ctrl:GridSplitter x:Name="Splitter" Grid.Row="1" Grid.Column="1" Visibility="Collapsed"
-                           HorizontalAlignment="Left" ResizeDirection="Auto" RequestedTheme="Light">
-            <ctrl:GridSplitter.RenderTransform>
-                <TranslateTransform X="-12" />
-            </ctrl:GridSplitter.RenderTransform>
-        </ctrl:GridSplitter>
-        -->
 
         <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0, 1, 0, 0"
               Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
@@ -106,10 +97,12 @@
 
                 <FontIcon FontSize="16" Glyph="&#xE930;" VerticalAlignment="Center"/>
                 <TextBlock x:Name="ProgressCompletedLabel" Margin="8, 0, 24, 0" Text="0" VerticalAlignment="Center"/>
-                <FontIcon FontSize="16" Glyph="&#xEBD3;" VerticalAlignment="Center"/>
+                <FontIcon x:Name="ProgressDetailIcon" FontSize="16" Glyph="&#xEBD3;" VerticalAlignment="Center"/>
                 <TextBlock x:Name="ProgressDetailLabel" Margin="8, 0" VerticalAlignment="Center"/>
                 <ProgressBar x:Name="ProgressDetailBar" Width="200"/>
             </StackPanel>
         </Grid>
+
+        <TeachingTip x:Name="WebMsgTip"/>
     </Grid>
 </Page>
