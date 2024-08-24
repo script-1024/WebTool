@@ -105,7 +105,8 @@ class Runner {
     
             // 开始抓取本页
             await this.getPageAsync(readDelay, ensureDelay);
-    
+            if (this.state >= 2) break;
+
             // 更新计数器
             this.fetched = 0;
             this.completed++;
