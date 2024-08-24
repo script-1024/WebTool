@@ -35,6 +35,14 @@
                 "type": "string"
             }
         },
+        "data": {
+            "type": "object",
+            "patternProperties": {
+                "^.+$": {
+                    "type": "object"
+                }
+            }
+        },
         "controls": {
             "$ref": "https://raw.githubusercontent.com/script-1024/WebTool/main/res/schemas/controls.json"
         }
