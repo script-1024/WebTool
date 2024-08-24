@@ -103,6 +103,10 @@
             </StackPanel>
         </Grid>
 
-        <TeachingTip x:Name="WebMsgTip"/>
+        <TeachingTip x:Name="WebMsgTip">
+            <TeachingTip.Content>
+                <TextBlock Text="" TextWrapping="Wrap"/>
+            </TeachingTip.Content>
+        </TeachingTip>
     </Grid>
 </Page>

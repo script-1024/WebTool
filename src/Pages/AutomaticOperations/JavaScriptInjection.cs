@@ -151,7 +151,7 @@ public sealed partial class AutomaticOperationsPage
     private async void ShowTip(TipMessage tip)
     {
         WebMsgTip.Title = tip.Title;
-        WebMsgTip.Content = tip.Content;
+        (WebMsgTip.Content as TextBlock).Text = tip.Content;
         WebMsgTip.IsLightDismissEnabled = tip.IsLightDismiss;
         WebMsgTip.IsOpen = true;
 
