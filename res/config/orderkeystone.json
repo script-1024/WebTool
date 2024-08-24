@@ -1,0 +1,29 @@
+{
+    "$schema": "https://raw.githubusercontent.com/script-1024/WebTool/main/res/schemas/config.json",
+    "version": 1,
+    "id": "orderkeystone",
+    "default_uri": "https://portal.lkqcorp.com/login",
+    "scripts": [
+        "common/foundation.js",
+        "orderkeystone/main.js",
+        "orderkeystone/runner.js"
+    ],
+    "data": {
+        "Runner": {
+            "searchList": [
+                "ABP", "AC1", "AC2", "AC3", "AC4", "ACA", "ACK", "ACM",
+                "ACP", "ACQ", "ACT", "ACU", "ACX", "AU1", "AU2", "AU3",
+                "AU4", "ALYA", "ALYB", "ALYC", "ALYD", "ALYF", "ALYG",
+                "ALYH", "ALYI", "ALYJ", "ALYK", "ALYL", "ALYM", "ALYN",
+                "ALYP", "ALYR", "ALYS", "ALYT", "ALYV", "ALYW", "ATAA",
+                "BAT", "BM", "CAC", "CAF", "CCA", "CCI", "CH1", "CH2",
+                "CH3", "CH4", "CH5", "FI", "FO1", "FO2", "FO3", "FO4",
+                "FW", "GM1", "GM2", "GM3", "GM4", "GMK", "HD", "HO",
+                "HU", "HY", "IN", "IW", "IZ", "JOH", "KI", "LX", "MA",
+                "MB", "MC", "MI", "NI", "PLA", "PO", "RAD", "RO", "SC",
+                "SP", "ST", "SU", "SZ", "TA", "TNK", "TO1", "TO2", "TO3",
+                "TO4", "VW", "WI"
+            ]
+        }
+    }
+}

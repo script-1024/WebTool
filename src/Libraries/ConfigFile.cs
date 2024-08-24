@@ -45,6 +45,19 @@ public class ConfigFile
                 foreach (var item in arr) file.Scripts[i++] = item.GetString();
             }, JsonValueKind.Array);
 
+            file.Root.TryGetValue("data", (elem) =>
+            {
+                var dataProperties = elem.EnumerateObject();
+                foreach (var obj in dataProperties)
+                {
+                    if (obj.Value.ValueKind == JsonValueKind.Object)
+                    {
+                        var objProperties = obj.Value.Deserialize<Dictionary<string, JsonElement>>();
+                        AppConfig.AdditionalData.MergeChildDictionary(obj.Name, objProperties);
+                    }
+                }
+            }, JsonValueKind.Object);
+
             /*
             file.Root.TryGetValue("controls", (e) =>
             {
@@ -59,6 +72,7 @@ public class ConfigFile
         }
         catch (Exception)
         {
+            // 忽略无效或格式错误的文件
             return null;
         }
     }
@@ -95,6 +109,7 @@ public static class AppConfig
     public static List<string> UsedScripts { get; private set; } = [];
     public static List<string> LoadedFiles { get; private set; } = [];
     public static List<string> BlockedFiles { get; private set; } = [];
+    public static Dictionary<string, Dictionary<string, JsonElement>> AdditionalData { get; private set; } = [];
     #endregion
 
     public delegate void ConfigReloadedEvent();
@@ -103,14 +118,16 @@ public static class AppConfig
     public static void ClearAll()
     {
         DefaultUri = null;
+        AdditionalData.Clear();
+        UsedScripts.Clear();
         LoadedFiles.Clear();
         LoadedId.Clear();
-        UsedScripts.Clear();
     }
 
     public static void Reload()
     {
         DefaultUri = null;
+        AdditionalData.Clear();
         UsedScripts.Clear();
         LoadedId.Clear();
 

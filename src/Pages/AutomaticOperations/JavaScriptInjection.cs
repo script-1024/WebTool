@@ -80,6 +80,16 @@ public sealed partial class AutomaticOperationsPage
             script = File.ReadAllText(path);
             await WebView.ExecuteScriptAsync(script);
         }
+
+        foreach (var objKvp in AppConfig.AdditionalData)
+        {
+            var objProperties = objKvp.Value;
+            foreach (var propKvp in objProperties)
+            {
+                script = $"{objKvp.Key}.{propKvp.Key} = {propKvp.Value.GetRawText()};";
+                await WebView.ExecuteScriptAsync(script);
+            }
+        }
     }
 
     private void CoreWebView2_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)

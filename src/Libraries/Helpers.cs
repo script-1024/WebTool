@@ -5,6 +5,7 @@ using Windows.UI;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
+using System.Collections.Generic;
 
 namespace WebTool.Lib;
 
@@ -112,13 +113,34 @@ public static class ColorHelper
     }
 }
 
-public static class UIHelper
+public static class UtilHelper
 {
+    /// <summary>
+    /// 由布尔值 <paramref name="value"/> 设置控件的可见性
+    /// </summary>
+    /// <returns>修改后的 <see cref="Visibility"/>，可用于连续设置多个控件</returns>
     public static Visibility SetVisibility(this UIElement uiElement, bool value)
     {
         return uiElement.Visibility = value switch {
             true => Visibility.Visible,
             false => Visibility.Collapsed
         };
+    }
+
+    /// <summary>
+    /// 添加新键值，或修改已有键值
+    /// </summary>
+    public static void AddOrSetValue<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue value)
+    {
+        if (!dictionary.TryAdd(key, value)) dictionary[key] = value;
+    }
+
+    public static void MergeChildDictionary<TValue>(this Dictionary<string, Dictionary<string, TValue>> parent, string key, Dictionary<string, TValue> child)
+    {
+        if (!parent.TryAdd(key, child))
+        {
+            var existing = parent[key];
+            foreach (var kvp in child) existing.AddOrSetValue(kvp.Key, kvp.Value);
+        }
     }
 }
