@@ -38,7 +38,8 @@
         "data": {
             "type": "object",
             "patternProperties": {
-                "^.+$": {
+                "^(\\d+.*|[^_a-zA-Z0-9]*)$": false,
+                "^(?!\\d+)[_a-zA-Z0-9]+$": {
                     "type": "object"
                 }
             }
