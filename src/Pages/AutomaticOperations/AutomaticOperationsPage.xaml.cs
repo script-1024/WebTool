@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Web;
-using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -146,6 +147,7 @@ namespace WebTool.Pages
                 var selectFileButton = new Button()
                 {
                     Content = "選擇檔案", Margin = new(8),
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Bottom,
                     Style = (Style)Resources["AccentButtonStyle"]
                 };
@@ -174,6 +176,13 @@ namespace WebTool.Pages
 
                 selectFileButton.Click += async (_, _) =>
                 {
+                    dialog.IsPrimaryButtonEnabled = false;
+                    selectFileButton.Content = new ProgressRing()
+                    {
+                        Foreground = new SolidColorBrush(Colors.White),
+                        Width = 21, Height = 21
+                    };
+
                     var picker = new FileOpenPicker();
 
                     // 取得当前窗口句柄，将选择器的拥有者设为此窗口
@@ -188,6 +197,7 @@ namespace WebTool.Pages
                     // 选择文件
                     xlsxFile?.SaveAndClose();
                     StorageFile file = await picker.PickSingleFileAsync();
+                    selectFileButton.Content = "選擇檔案";
                     if (file != null)
                     {
                         dialog.IsPrimaryButtonEnabled = true;
