@@ -7,7 +7,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.Foundation;
 using WebTool.Lib;
-using DocumentFormat.OpenXml.Office2010.ExcelAc;
 
 namespace WebTool.Pages;
 
@@ -18,6 +17,17 @@ public sealed partial class AutomaticOperationsPage
         // 更新导航栏状态
         UpdateWebViewNavigationBar();
         (ReloadButton.Icon as FontIcon).Glyph = "\uE72C"; // `Reload` icon
+
+        // 重置右侧面板状态
+        ProgressDetailBar.IsIndeterminate = false;
+        if (!WebView.Source.AbsoluteUri.StartsWith("https://preview.orderkeystone.com/")
+            || StartButton.Content.ToString() != "繼續")
+        {
+            status = WorkingStatus.Ready;
+            StartButton.Content = "開始";
+            xlsxFile?.SaveAndClose();
+            xlsxFile = null;
+        }
 
         // 注入 JavaScript 代码
         // 包含一些实用函数，并检测鼠标移动
@@ -122,7 +132,11 @@ public sealed partial class AutomaticOperationsPage
 
                 // 设置外观类型是否为 `不确定`，再决定是否需要设置进度值
                 if (!(ProgressDetailBar.IsIndeterminate = info.IsIndeterminate))
-                    ProgressDetailBar.Value = info.Current / info.Total * 100;
+                {
+                    this.completed = info.Completed;
+                    this.fetched = info.Current;
+                    ProgressDetailBar.Value = info.Current / (info.Total * 0.01);
+                }
                 break;
 
             case "WriteToFile":
@@ -135,12 +149,18 @@ public sealed partial class AutomaticOperationsPage
                 break;
 
             case "Terminated":
-                xlsxFile.Save();
+                xlsxFile?.Save();
                 break;
 
             case "Finished":
+                status = WorkingStatus.Ready;
+                StartButton.Content = "開始";
                 xlsxFile?.SaveAndClose();
                 xlsxFile = null;
+                break;
+
+            default:
+                WebView.ExecuteScriptAsync($"console.warn('未知消息: {msg.Type}', {msg.Data.GetRawText()})");
                 break;
         }
     }
@@ -152,17 +172,23 @@ public sealed partial class AutomaticOperationsPage
         if (position != mousePosition) WebView_MouseMove(position);
     }
 
-    private async void ShowTip(TipMessage tip)
+    private void ShowTip(TipMessage tip) => ShowTip(tip.Title, tip.Content, tip.IsLightDismiss);
+    
+    private async void ShowTip(string title, string content, bool isLightDismiss = true)
     {
-        WebMsgTip.Title = tip.Title;
-        (WebMsgTip.Content as TextBlock).Text = tip.Content;
-        WebMsgTip.IsLightDismissEnabled = tip.IsLightDismiss;
+        int retries = 0, maxRetries = 30; // 容许 15 秒内关闭弹窗
+        while (WebMsgTip.IsOpen && retries++ < maxRetries) await Task.Delay(500);
+        if (retries >= maxRetries) return;
+
+        WebMsgTip.Title = title;
+        (WebMsgTip.Content as TextBlock).Text = content;
+        WebMsgTip.IsLightDismissEnabled = isLightDismiss;
         WebMsgTip.IsOpen = true;
 
-        if (!tip.IsLightDismiss) return;
+        if (!isLightDismiss) return;
 
         // 根据字数决定显示时长
-        var delay = tip.Content.Length * 180;
+        var delay = content.Length * 180;
         if (delay < 2700) delay = 2700;
         if (delay >= 18000) WebMsgTip.IsLightDismissEnabled = false;
         else
@@ -209,9 +235,9 @@ public sealed partial class AutomaticOperationsPage
 
     private struct ProgressInfo
     {
-        public double Current { get; set; }
-        public double Total { get; set; }
-        public double Completed { get; set; }
+        public int Current { get; set; }
+        public int Total { get; set; }
+        public int Completed { get; set; }
         public string IconGlyph { get; set; }
         public bool IsIndeterminate { get; set; }
     }
@@ -221,6 +247,13 @@ public sealed partial class AutomaticOperationsPage
         public string Title { get; set; }
         public string Content { get; set; }
         public bool IsLightDismiss { get; set; }
+    }
+
+    private enum WorkingStatus
+    {
+        Ready = 0,
+        Working = 1,
+        Terminated = 2
     }
 
     #endregion

@@ -101,30 +101,28 @@ namespace WebTool.Pages
             
             UseDefaultButton.Click += (_, _) =>
             {
-                RDTextBox.Text = "600";
-                EDTextBox.Text = "300";
-                CDTextBox.Text = "1200";
+                RDTextBox.Text = "400";
+                EDTextBox.Text = "800";
+                CDTextBox.Text = "400";
             };
 
             SkipButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"Runner.skip()");
             
             StopAllButton.Click += async (_, _) =>
             {
-                await WebView.ExecuteScriptAsync($"Runner.stopAll()");
-
-                ShowTip(new() { Title = "網頁通知", Content = "已停止抓取操作", IsLightDismiss = true});
-
                 if (xlsxFile is null) return;
 
-                int retries = 0, maxRetries = 30; // 容许 15 秒内关闭文件
-                while (xlsxFile != null && retries++ < maxRetries) await Task.Delay(500);
+                await WebView.ExecuteScriptAsync($"Runner.stopAll()");
 
                 xlsxFile?.SaveAndClose();
                 xlsxFile = null;
 
-                if (retries >= maxRetries) ShowTip(new() { Title = "操作提示", Content = "腳本未在容許時限內關閉文件，\n已由客戶端主動關閉", IsLightDismiss = true });
+                ShowTip("操作提示", "文件已保存");
 
+                // 更新状态
                 ProgressDetailBar.IsIndeterminate = false;
+                status = WorkingStatus.Ready;
+                StartButton.Content = "開始";
             };
             
             ResumeButton.Click += async (_, _) =>
@@ -143,8 +141,8 @@ namespace WebTool.Pages
                 horizontalGrid.ColumnDefinitions.Add(new());
                 horizontalGrid.ColumnDefinitions.Add(new());
 
-                var completedTextBox = new TextBox() { Header = "完成頁面", Margin = new(8), PlaceholderText = "0" };
-                var fetchedTextBox = new TextBox() { Header = "已抓取項", Margin = new(8), PlaceholderText = "0" };
+                var completedTextBox = new TextBox() { Header = "完成頁面", Margin = new(8), PlaceholderText = "0", Text = $"{completed}" };
+                var fetchedTextBox = new TextBox() { Header = "已抓取項", Margin = new(8), PlaceholderText = "0", Text = $"{fetched}" };
                 var selectFileButton = new Button()
                 {
                     Content = "選擇檔案", Margin = new(8),
@@ -207,6 +205,8 @@ namespace WebTool.Pages
                     if (!int.TryParse(completedTextBox.Text.Trim(), out int c)) c = 0;
                     if (!int.TryParse(fetchedTextBox.Text.Trim(), out int f)) f = 0;
 
+                    StartButton.Content = "暫停";
+                    status = WorkingStatus.Working;
                     await WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd}, {c}, {f})");
                 }
                 else
@@ -218,29 +218,53 @@ namespace WebTool.Pages
 
             StartButton.Click += async (_, _) =>
             {
-                if (!int.TryParse(RDTextBox.Text.Trim(), out int rd)) return;
-                if (!int.TryParse(EDTextBox.Text.Trim(), out int ed)) return;
-                if (!int.TryParse(CDTextBox.Text.Trim(), out int cd)) return;
-                
-                int count = 0;
-                string date = $"{DateTime.Now:yyyy-MM-dd}", name, path;
+                var reqParameters = new TipMessage() { Title = "網頁通知", Content = "未提供必要參數", IsLightDismiss = true };
+                if (!int.TryParse(RDTextBox.Text.Trim(), out int rd)) { ShowTip(reqParameters); return; }
+                if (!int.TryParse(EDTextBox.Text.Trim(), out int ed)) { ShowTip(reqParameters); return; }
+                if (!int.TryParse(CDTextBox.Text.Trim(), out int cd)) { ShowTip(reqParameters); return; }
 
-                do
+                switch (status)
                 {
-                    // 检查重名文件
-                    name = $"{date}_#{count++}";
-                    path = @$"Downloads\{name}.xlsx";
+                    case WorkingStatus.Ready:
+                        CreateNewFile();
+                        StartButton.Content = "暫停";
+                        status = WorkingStatus.Working;
+                        await WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd})");
+                        break;
+
+                    case WorkingStatus.Working:
+                        await WebView.ExecuteScriptAsync($"Runner.stopAll()");
+                        StartButton.Content = "繼續";
+                        status = WorkingStatus.Terminated;
+                        break;
+
+                    case WorkingStatus.Terminated:
+                        StartButton.Content = "暫停";
+                        status = WorkingStatus.Working;
+                        await WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd}, {completed}, {fetched})");
+                        break;
                 }
-                while (File.Exists(path));
-
-                // 保存旧文件
-                xlsxFile?.SaveAndClose();
-
-                // 创建新文件
-                xlsxFile = XlsxFile.Create(path, "product_list");
-
-                await WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd})");
             };
+        }
+
+        private void CreateNewFile()
+        {
+            int count = 0;
+            string date = $"{DateTime.Now:yyyy-MM-dd}", name, path;
+
+            do
+            {
+                // 检查重名文件
+                name = $"{date}_#{count++}";
+                path = @$"Downloads\{name}.xlsx";
+            }
+            while (File.Exists(path));
+
+            // 保存旧文件
+            xlsxFile?.SaveAndClose();
+
+            // 创建新文件
+            xlsxFile = XlsxFile.Create(path, "product_list");
         }
 
         #region NavigationBar
@@ -304,6 +328,12 @@ namespace WebTool.Pages
         private static partial Regex HttpRegex();
 
         private XlsxFile xlsxFile;
+
+        private WorkingStatus status = WorkingStatus.Ready;
+
+        private int completed = 0;
+
+        private int fetched = 0;
 
         #endregion
     }
