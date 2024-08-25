@@ -1,12 +1,10 @@
 ﻿using System;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.System;
 using Windows.Foundation;
-using Windows.Storage;
-using Windows.Storage.Pickers;
-using Microsoft.UI.Xaml;
 using Windows.Win32.Core;
 
 namespace WebTool.Pages;
@@ -21,15 +19,16 @@ public sealed partial class AutomaticOperationsPage
 
     private void Window_Closing(object sender, WindowClosingEventArgs e)
     {
-        App.MainWindow.Closing -= Window_Closing;
-        xlsxFile?.SaveAndCloseAsync();
+        xlsxFile?.SaveAndClose();
         xlsxFile = null;
+
+        App.MainWindow.Closing -= Window_Closing;
         e.TryCancel();
     }
 
     private void CurrentDomain_ProcessExit(object sender, EventArgs e)
     {
-        xlsxFile?.SaveAndCloseAsync();
+        xlsxFile?.SaveAndClose();
         xlsxFile = null;
     }
 

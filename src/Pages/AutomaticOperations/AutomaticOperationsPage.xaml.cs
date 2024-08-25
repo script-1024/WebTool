@@ -119,7 +119,7 @@ namespace WebTool.Pages
                 int retries = 0, maxRetries = 30; // 容许 15 秒内关闭文件
                 while (xlsxFile != null && retries++ < maxRetries) await Task.Delay(500);
 
-                xlsxFile?.SaveAndCloseAsync();
+                xlsxFile?.SaveAndClose();
                 xlsxFile = null;
 
                 if (retries >= maxRetries) ShowTip(new() { Title = "操作提示", Content = "腳本未在容許時限內關閉文件，\n已由客戶端主動關閉", IsLightDismiss = true });
@@ -188,7 +188,7 @@ namespace WebTool.Pages
                     picker.FileTypeFilter.Add(".xlsx");
 
                     // 选择文件
-                    xlsxFile?.SaveAndCloseAsync();
+                    xlsxFile?.SaveAndClose();
                     StorageFile file = await picker.PickSingleFileAsync();
                     if (file != null)
                     {
@@ -234,7 +234,7 @@ namespace WebTool.Pages
                 while (File.Exists(path));
 
                 // 保存旧文件
-                xlsxFile?.SaveAndCloseAsync();
+                xlsxFile?.SaveAndClose();
 
                 // 创建新文件
                 xlsxFile = XlsxFile.Create(path, "product_list");

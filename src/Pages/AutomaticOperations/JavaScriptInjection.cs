@@ -134,8 +134,12 @@ public sealed partial class AutomaticOperationsPage
                 });
                 break;
 
+            case "Terminated":
+                xlsxFile.Save();
+                break;
+
             case "Finished":
-                xlsxFile?.SaveAndCloseAsync();
+                xlsxFile?.SaveAndClose();
                 xlsxFile = null;
                 break;
         }

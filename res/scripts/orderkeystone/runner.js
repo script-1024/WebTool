@@ -115,12 +115,14 @@ class Runner {
             await delay(cycleDelay);
         }
 
-        if (this.state > 0) WebTool.updateProgressBar(this.fetched, OrderKeystone.totalItemCount, this.completed);
+        if (this.state > 0) {
+            WebTool.updateProgressBar(this.fetched, OrderKeystone.totalItemCount, this.completed);
+            WebTool.postMsg('Terminated');
+        }
         else {
             WebTool.hideProgressBar();
             WebTool.showTip('網頁通知', '已順利完成所有操作');
+            WebTool.postMsg('Finished');
         }
-
-        WebTool.postMsg('Finished', this.state);
     }
 }

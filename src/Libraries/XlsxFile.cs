@@ -18,6 +18,8 @@ public class XlsxFile : IDisposable
     private bool _writing = false;
     private int _currentRow;
 
+    public string Path { get; private set; }
+
     private XlsxFile(FileStream fileStream, IXLWorksheet worksheet, List<string> headerList, int currentRow)
     {
         _fileStream = fileStream;
@@ -61,7 +63,7 @@ public class XlsxFile : IDisposable
         workbook.Dispose();
 
         // 打开文件流并锁定文件
-        var fileStream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        var fileStream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
         workbook = new XLWorkbook(fileStream);
 
         // 初始化
@@ -71,7 +73,7 @@ public class XlsxFile : IDisposable
 
         SetWorksheetStyle(worksheet);
 
-        return new XlsxFile(fileStream, worksheet, headerList, currentRow);
+        return new XlsxFile(fileStream, worksheet, headerList, currentRow) { Path = path };
     }
 
     /// <summary>
@@ -83,7 +85,7 @@ public class XlsxFile : IDisposable
     public static XlsxFile Open(string path, string worksheetName)
     {
         // 打开文件流并锁定文件
-        var fileStream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        var fileStream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
         var workbook = new XLWorkbook(fileStream);
 
         // 尝试获取指定工作表，如果不存在则创建一个新的
@@ -98,7 +100,7 @@ public class XlsxFile : IDisposable
         var headerList = worksheet.Row(1).CellsUsed().Select(cell => cell.GetString()).ToList();
         int currentRow = worksheet.LastRowUsed()?.RowNumber() + 1 ?? 2;
 
-        return new XlsxFile(fileStream, worksheet, headerList, currentRow);
+        return new XlsxFile(fileStream, worksheet, headerList, currentRow) { Path = path };
     }
 
     /// <summary>
@@ -198,17 +200,9 @@ public class XlsxFile : IDisposable
     /// <summary>
     /// 保存并关闭文件
     /// </summary>
-    public async void SaveAndCloseAsync()
+    public void SaveAndClose()
     {
         if (_disposed) return;
-
-        int retries = 0, maxRetries = 60;
-        while (_writing && retries++ < maxRetries)
-        {
-            // 若正在写入数据就等待 3 秒再检查
-            await Task.Delay(3000);
-        }
-
         _workbook.Save();
         Close();
     }
@@ -238,7 +232,7 @@ public class XlsxFile : IDisposable
     public void Dispose()
     {
         if (_disposed) return;
-        SaveAndCloseAsync();
+        SaveAndClose();
         GC.SuppressFinalize(this);
     }
 
