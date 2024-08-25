@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 using ClosedXML.Excel;
 
@@ -12,10 +11,9 @@ public class XlsxFile : IDisposable
 {
     private readonly XLWorkbook _workbook;
     private readonly List<string> _headerList;
+    private readonly FileStream _fileStream;
     private IXLWorksheet _worksheet;
-    private FileStream _fileStream;
     private bool _disposed = false;
-    private bool _writing = false;
     private int _currentRow;
 
     public string Path { get; private set; }
@@ -109,22 +107,15 @@ public class XlsxFile : IDisposable
     public void AppendData(List<Dictionary<string, JsonElement>> dataList)
     {
         if (_disposed) return;
-        foreach (var data in dataList) AppendData(data, preventClose: true);
-        _writing = false;
+        foreach (var data in dataList) AppendData(data);
     }
 
     /// <summary>
     /// 从字典添加数据，所有键值都会分别对应到表头和单元格
     /// </summary>
-    public void AppendData(Dictionary<string, JsonElement> data) => AppendData(data, preventClose: false);
-
-    /// <summary>
-    /// 私有方法，从字典添加数据
-    /// </summary>
-    private void AppendData(Dictionary<string, JsonElement> data, bool preventClose)
+    public void AppendData(Dictionary<string, JsonElement> data)
     {
         if (_disposed) return;
-        _writing = true;
 
         foreach (var key in data.Keys)
         {
@@ -155,8 +146,6 @@ public class XlsxFile : IDisposable
 
         // 数据写入后，当前行下移一行
         _currentRow++;
-
-        if (!preventClose) _writing = false;
     }
 
     /// <summary>

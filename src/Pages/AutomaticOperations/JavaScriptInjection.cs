@@ -140,12 +140,7 @@ public sealed partial class AutomaticOperationsPage
                 break;
 
             case "WriteToFile":
-                // 异步处理事件，不阻塞消息接收
-                if (xlsxFile != null) Task.Run(() =>
-                {
-                    WriteToFile(msg.Data);
-                    xlsxFile.Save();
-                });
+                if (xlsxFile != null) WriteToFile(msg.Data);
                 break;
 
             case "Terminated":
@@ -160,7 +155,7 @@ public sealed partial class AutomaticOperationsPage
                 break;
 
             default:
-                WebView.ExecuteScriptAsync($"console.warn('未知消息: {msg.Type}', {msg.Data.GetRawText()})");
+                _ = WebView.ExecuteScriptAsync($"console.warn('未知消息: {msg.Type}', {msg.Data.GetRawText()})");
                 break;
         }
     }
@@ -200,16 +195,36 @@ public sealed partial class AutomaticOperationsPage
 
     private void WriteToFile(JsonElement jsonData)
     {
-        switch (jsonData.ValueKind)
+        try
         {
-            case JsonValueKind.Array:
-                var list = jsonData.Deserialize<List<Dictionary<string, JsonElement>>>(jsonSerializerOptions);
-                xlsxFile.AppendData(list);
-                break;
-            case JsonValueKind.Object:
-                var dict = jsonData.Deserialize<Dictionary<string, JsonElement>>(jsonSerializerOptions);
-                xlsxFile.AppendData(dict);
-                break;
+            switch (jsonData.ValueKind)
+            {
+                case JsonValueKind.Array:
+                    var list = jsonData.Deserialize<List<Dictionary<string, JsonElement>>>(jsonSerializerOptions);
+                    xlsxFile.AppendData(list);
+                    break;
+                case JsonValueKind.Object:
+                    var dict = jsonData.Deserialize<Dictionary<string, JsonElement>>(jsonSerializerOptions);
+                    xlsxFile.AppendData(dict);
+                    break;
+            }
+        }
+        catch (IOException)
+        {
+            // * 小概率事件，无法稳定复现 *
+            // 虽然 Visual Studio 提示了 I/O 错误
+            // 但 ClosedXml 似乎依然能将数据正确地写入到文件中
+            // 倘若此时正常关闭程序和文件流不会损坏档案
+            // 但显然 VS 的调试工具有些太直接粗暴了
+            // 跑了几次测试都因为用了中止调试导致文件损坏 QAQ
+            ShowTip("風險通知", "調試工具偵測到 I/O 異常，建議先暫停所有操作，備份並確認文件正常後，可忽略此處通知", false);
+            if (status == WorkingStatus.Working)
+            {
+                _ = WebView.ExecuteScriptAsync($"Runner.stopAll()");
+                StartButton.Content = "繼續";
+                status = WorkingStatus.Terminated;
+                xlsxFile?.Save();
+            }
         }
     }
 
