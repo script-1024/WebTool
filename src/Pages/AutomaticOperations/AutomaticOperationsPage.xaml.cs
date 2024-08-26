@@ -109,11 +109,13 @@ namespace WebTool.Pages
 
             SkipButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"Runner.skip()");
             
-            StopAllButton.Click += async (_, _) =>
+            StopAllButton.Click += (_, _) =>
             {
                 if (xlsxFile is null) return;
 
-                await WebView.ExecuteScriptAsync($"Runner.stopAll()");
+                _ = WebView.ExecuteScriptAsync($"Runner.stopAll()");
+
+                ShowTip("網頁通知", "已停止抓取操作");
 
                 xlsxFile?.SaveAndClose();
                 xlsxFile = null;
@@ -226,7 +228,7 @@ namespace WebTool.Pages
                 }
             };
 
-            StartButton.Click += async (_, _) =>
+            StartButton.Click += (_, _) =>
             {
                 var reqParameters = new TipMessage() { Title = "網頁通知", Content = "未提供必要參數", IsLightDismiss = true };
                 if (!int.TryParse(RDTextBox.Text.Trim(), out int rd)) { ShowTip(reqParameters); return; }
@@ -239,19 +241,21 @@ namespace WebTool.Pages
                         CreateNewFile();
                         StartButton.Content = "暫停";
                         status = WorkingStatus.Working;
-                        await WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd})");
+                        _ = WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd})");
                         break;
 
                     case WorkingStatus.Working:
-                        await WebView.ExecuteScriptAsync($"Runner.stopAll()");
                         StartButton.Content = "繼續";
                         status = WorkingStatus.Terminated;
+                        _ = WebView.ExecuteScriptAsync($"Runner.stopAll()");
+                        ShowTip("網頁通知", "已停止抓取操作");
+                        xlsxFile?.Save();
                         break;
 
                     case WorkingStatus.Terminated:
                         StartButton.Content = "暫停";
                         status = WorkingStatus.Working;
-                        await WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd}, {completed}, {fetched})");
+                        _ = WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd}, {completed}, {fetched})");
                         break;
                 }
             };

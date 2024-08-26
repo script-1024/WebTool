@@ -107,7 +107,6 @@ class Runner {
 
         if (this.status > 0) {
             WebTool.updateProgressBar(this.fetched, OrderKeystone.totalItemCount, this.completed);
-            WebTool.showTip('網頁通知', '已停止抓取操作');
             WebTool.postMsg('Terminated');
         }
         else {
