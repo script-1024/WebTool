@@ -167,11 +167,11 @@ public sealed partial class AutomaticOperationsPage
         if (position != mousePosition) WebView_MouseMove(position);
     }
 
-    private void ShowTip(TipMessage tip) => ShowTip(tip.Title, tip.Content, tip.IsLightDismiss);
+    private async Task ShowTip(TipMessage tip) => await ShowTip(tip.Title, tip.Content, tip.IsLightDismiss);
     
-    private async void ShowTip(string title, string content, bool isLightDismiss = true)
+    private async Task ShowTip(string title, string content, bool isLightDismiss = true)
     {
-        int retries = 0, maxRetries = 30; // 容许 15 秒内关闭弹窗
+        int retries = 0, maxRetries = 40; // 容许 20 秒内关闭弹窗
         while (WebMsgTip.IsOpen && retries++ < maxRetries) await Task.Delay(500);
         if (retries >= maxRetries) return;
 

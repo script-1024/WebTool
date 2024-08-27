@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Web;
+using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
@@ -98,7 +99,7 @@ namespace WebTool.Pages
             Uri HOME_URI = new("https://portal.lkqcorp.com/login");
             WebView.Source = HOME_URI;
 
-            SearchButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"OrderKeystone.search('{SearchBox.Text.Trim()}')");
+            SearchButton.Click += (_, _) => WebView.ExecuteScriptAsync($"OrderKeystone.search('{SearchBox.Text.Trim()}')");
             
             UseDefaultButton.Click += (_, _) =>
             {
@@ -107,25 +108,29 @@ namespace WebTool.Pages
                 CDTextBox.Text = "400";
             };
 
-            SkipButton.Click += async (_, _) => await WebView.ExecuteScriptAsync($"Runner.skip()");
+            SkipButton.Click += (_, _) =>
+            {
+                if (xlsxFile is null) { ShowTip("無效請求", "當前未進行任何操作"); return; }
+                WebView.ExecuteScriptAsync($"Runner.skip()");
+            };
             
             StopAllButton.Click += (_, _) =>
             {
-                if (xlsxFile is null) return;
+                if (xlsxFile is null) { ShowTip("無效請求", "當前未進行任何操作"); return; }
 
-                _ = WebView.ExecuteScriptAsync($"Runner.stopAll()");
+                WebView.ExecuteScriptAsync($"Runner.stopAll()");
 
                 ShowTip("網頁通知", "已停止抓取操作");
 
                 xlsxFile?.SaveAndClose();
                 xlsxFile = null;
 
-                ShowTip("操作提示", "文件已保存");
-
                 // 更新状态
                 ProgressDetailBar.IsIndeterminate = false;
                 status = WorkingStatus.Ready;
                 StartButton.Content = "開始";
+
+                ShowTip("操作提示", "文件已保存");
             };
             
             ResumeButton.Click += async (_, _) =>
@@ -178,33 +183,24 @@ namespace WebTool.Pages
 
                 selectFileButton.Click += async (_, _) =>
                 {
+                    // 禁用 PrimaryButton 直到完成文件选择
                     dialog.IsPrimaryButtonEnabled = false;
+
+                    // 显示加载指示
                     selectFileButton.Content = new ProgressRing()
                     {
                         Foreground = new SolidColorBrush(Colors.White),
                         Width = 21, Height = 21
                     };
 
-                    var picker = new FileOpenPicker();
+                    // 调用异步方法进行文件选择和加载操作
+                    bool isSuccessed = await LoadFileAsync();
 
-                    // 取得当前窗口句柄，将选择器的拥有者设为此窗口
-                    WinRT.Interop.InitializeWithWindow.Initialize(picker, App.MainWindow.Hwnd);
-
-                    // 选择器的预设路径
-                    picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-
-                    // 文件类型
-                    picker.FileTypeFilter.Add(".xlsx");
-
-                    // 选择文件
-                    xlsxFile?.SaveAndClose();
-                    StorageFile file = await picker.PickSingleFileAsync();
+                    // 恢复按钮内容
                     selectFileButton.Content = "選擇檔案";
-                    if (file != null)
-                    {
-                        dialog.IsPrimaryButtonEnabled = true;
-                        xlsxFile = XlsxFile.Open(file.Path, "product_list");
-                    }
+
+                    // 选择文件后才启用 PrimaryButton
+                    dialog.IsPrimaryButtonEnabled = isSuccessed;
                 };
 
                 var result = await dialog.ShowAsync();
@@ -219,18 +215,19 @@ namespace WebTool.Pages
 
                     StartButton.Content = "暫停";
                     status = WorkingStatus.Working;
-                    await WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd}, {c}, {f})");
+                    WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd}, {c}, {f})");
                 }
                 else
                 {
                     xlsxFile?.Close();
                     xlsxFile = null;
+                    await ShowTip("系統提示", "操作已取消");
                 }
             };
 
             StartButton.Click += (_, _) =>
             {
-                var reqParameters = new TipMessage() { Title = "網頁通知", Content = "未提供必要參數", IsLightDismiss = true };
+                var reqParameters = new TipMessage() { Title = "系統提示", Content = "未提供必要參數", IsLightDismiss = true };
                 if (!int.TryParse(RDTextBox.Text.Trim(), out int rd)) { ShowTip(reqParameters); return; }
                 if (!int.TryParse(EDTextBox.Text.Trim(), out int ed)) { ShowTip(reqParameters); return; }
                 if (!int.TryParse(CDTextBox.Text.Trim(), out int cd)) { ShowTip(reqParameters); return; }
@@ -241,24 +238,53 @@ namespace WebTool.Pages
                         CreateNewFile();
                         StartButton.Content = "暫停";
                         status = WorkingStatus.Working;
-                        _ = WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd})");
+                        WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd})");
                         break;
 
                     case WorkingStatus.Working:
                         StartButton.Content = "繼續";
                         status = WorkingStatus.Terminated;
-                        _ = WebView.ExecuteScriptAsync($"Runner.stopAll()");
                         ShowTip("網頁通知", "已停止抓取操作");
-                        xlsxFile?.Save();
+                        WebView.ExecuteScriptAsync($"Runner.stopAll()");
                         break;
 
                     case WorkingStatus.Terminated:
                         StartButton.Content = "暫停";
                         status = WorkingStatus.Working;
-                        _ = WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd}, {completed}, {fetched})");
+                        WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd}, {completed}, {fetched})");
                         break;
                 }
             };
+        }
+
+        private async Task<bool> LoadFileAsync()
+        {
+            // 初始化文件选择器窗口
+            var picker = new FileOpenPicker();
+
+            // 取得当前窗口句柄，将选择器的拥有者设为此窗口
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, App.MainWindow.Hwnd);
+
+            // 选择器的预设路径
+            picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+
+            // 文件类型
+            picker.FileTypeFilter.Add(".xlsx");
+
+            // 保存并关闭当前的 xlsx 文件（如果有）
+            xlsxFile?.SaveAndClose();
+
+            StorageFile file = null;
+
+            // 使用 Task.Run 将文件处理放在后台线程中，防止阻塞 UI 线程
+            await Task.Run(async () => {
+                // 选择文件
+                file = await picker.PickSingleFileAsync();
+                if (file != null)
+                    xlsxFile = XlsxFile.Open(file.Path, "product_list");
+            });
+
+            return file != null;
         }
 
         private void CreateNewFile()

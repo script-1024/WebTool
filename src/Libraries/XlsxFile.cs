@@ -39,6 +39,7 @@ public class XlsxFile : IDisposable
         worksheet.Style.Font.FontName = "Arial";
         worksheet.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
         worksheet.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+        worksheet.Row(1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
         worksheet.Column(1).Width = 16;
         worksheet.Column(2).Width = 16;
         worksheet.Column(3).Width = 16;
@@ -129,7 +130,6 @@ public class XlsxFile : IDisposable
                 cell.Value = key;
                 cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#B7DEE8");
                 cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
                 cell.Style.Font.FontSize = 14;
             }
         }
