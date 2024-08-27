@@ -42,7 +42,11 @@ namespace WebTool.Pages
 
             GoForwardButton.Click += (_, _) => WebView.GoForward();
 
-            ReloadButton.Click += (_, _) => WebView.Reload();
+            ReloadButton.Click += (_, _) =>
+            {
+                if (status == WorkingStatus.Working) Runner_Pause();
+                WebView.Reload();
+            };
 
             GoHomeButton.Click += (_, _) =>
             {
@@ -213,15 +217,13 @@ namespace WebTool.Pages
                     if (!int.TryParse(completedTextBox.Text.Trim(), out int c)) c = 0;
                     if (!int.TryParse(fetchedTextBox.Text.Trim(), out int f)) f = 0;
 
-                    StartButton.Content = "暫停";
-                    status = WorkingStatus.Working;
-                    WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd}, {c}, {f})");
+                    Runner_Start(rd, ed, cd, c, f);
                 }
                 else
                 {
                     xlsxFile?.Close();
                     xlsxFile = null;
-                    await ShowTip("系統提示", "操作已取消");
+                    ShowTip("系統提示", "操作已取消");
                 }
             };
 
@@ -235,23 +237,15 @@ namespace WebTool.Pages
                 switch (status)
                 {
                     case WorkingStatus.Ready:
-                        CreateNewFile();
-                        StartButton.Content = "暫停";
-                        status = WorkingStatus.Working;
-                        WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd})");
+                        Runner_Start(rd, ed, cd);
                         break;
 
                     case WorkingStatus.Working:
-                        StartButton.Content = "繼續";
-                        status = WorkingStatus.Terminated;
-                        ShowTip("網頁通知", "已停止抓取操作");
-                        WebView.ExecuteScriptAsync($"Runner.stopAll()");
+                        Runner_Pause();
                         break;
 
                     case WorkingStatus.Terminated:
-                        StartButton.Content = "暫停";
-                        status = WorkingStatus.Working;
-                        WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd}, {completed}, {fetched})");
+                        Runner_Start(rd, ed, cd, completed, fetched);
                         break;
                 }
             };
@@ -295,7 +289,7 @@ namespace WebTool.Pages
             do
             {
                 // 检查重名文件
-                name = $"{date}_#{count++}";
+                name = $"{date}_{count++}";
                 path = @$"Downloads\{name}.xlsx";
             }
             while (File.Exists(path));
@@ -325,7 +319,7 @@ namespace WebTool.Pages
             isUpdateDisabled = true;
 
             // 自动聚焦到浏览器，使输入框失去焦点
-            WebView.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+            WebView.Focus(FocusState.Programmatic);
 
             if (userInput == "about:blank")
             {

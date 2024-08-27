@@ -155,7 +155,7 @@ public sealed partial class AutomaticOperationsPage
                 break;
 
             default:
-                _ = WebView.ExecuteScriptAsync($"console.warn('未知消息: {msg.Type}', {msg.Data.GetRawText()})");
+                WebView.ExecuteScriptAsync($"console.warn('未知消息: {msg.Type}', {msg.Data.GetRawText()})");
                 break;
         }
     }

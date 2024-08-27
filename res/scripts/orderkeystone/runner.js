@@ -111,7 +111,7 @@ class Runner {
         }
         else {
             WebTool.hideProgressBar();
-            WebTool.showTip('網頁通知', '已順利完成所有操作');
+            WebTool.showTip('網頁通知', '已順利完成所有操作', false);
             WebTool.postMsg('Finished');
         }
     }

@@ -57,4 +57,24 @@ public sealed partial class AutomaticOperationsPage
     }
 
     #endregion
+
+    #region Runner
+
+    private void Runner_Start(int rd, int ed, int cd, int c = 0, int f = 0)
+    {
+        if (xlsxFile is null) CreateNewFile();
+        StartButton.Content = "暫停";
+        status = WorkingStatus.Working;
+        WebView.ExecuteScriptAsync($"Runner.runAsync({rd}, {ed}, {cd}, {c}, {f})");
+    }
+
+    private void Runner_Pause()
+    {
+        StartButton.Content = "繼續";
+        status = WorkingStatus.Terminated;
+        ShowTip("網頁通知", "已停止抓取操作");
+        WebView.ExecuteScriptAsync($"Runner.stopAll()");
+    }
+
+    #endregion
 }
