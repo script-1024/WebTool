@@ -46,13 +46,14 @@ class Runner {
         const result = this.createObject();
         
         // 外层数据
-        result.id = info.querySelector('.availability-info div a').text;
+        result.id = info.querySelector('a').text;
         result.name = info.querySelector('.product-title').textContent;
         result.description = info.querySelector('.part-description').innerText.replace('• ', '').replaceAll('\n• ', ', ');
         result.list_price = parseFloat(cost.querySelectorAll('.cost-row span')[1].textContent.replace(/\$|,/g, ''));
         result.your_price = parseFloat(cost.querySelectorAll('.cost-row.your-cost span')[1].textContent.replace(/\$|,/g, ''));
     
-        WebTool.postMsg('WriteToFile', result);
+        // 开头必须符合搜索字段才发送到用户端
+        if (result.id.startWith(OrderKeystone.currentSearched)) WebTool.postMsg('WriteToFile', result);
         this.releaseObject(result);
         return true;
     }

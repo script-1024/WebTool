@@ -70,9 +70,7 @@
 
             <Border Margin="0, 24" BorderThickness="1" BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"/>
 
-            <StackPanel Orientation="Horizontal">
-                <Button x:Name="UseDefaultButton" Content="使用預設值"/>
-            </StackPanel>
+            <Button x:Name="UseDefaultButton" Content="使用預設值"/>
             <!-- 后续版本删除 -->
 
         </StackPanel>

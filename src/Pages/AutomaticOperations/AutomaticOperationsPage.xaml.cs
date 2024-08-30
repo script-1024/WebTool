@@ -96,12 +96,23 @@ namespace WebTool.Pages
                @$"Mozilla/5.0 (Windows NT 10.0; Win64; x64)
                   AppleWebKit/537.36 (KHTML, like Gecko)
                   Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0 WebTool/{App.ShortVersion}";
+
+            // 尝试设置初始页
+            try { WebView.Source = new Uri(AppConfig.DefaultUri); }
+            catch (Exception) { WebView.Source = new Uri("about:blank"); }
         }
 
         private void CustomizeFunctions_orderkeystone()
         {
-            Uri HOME_URI = new("https://portal.lkqcorp.com/login");
-            WebView.Source = HOME_URI;
+            bool checkDelayParam(out int rd, out int ed, out int cd)
+            {
+                rd = ed = cd = default;
+                var reqParameters = new TipMessage() { Title = "系統提示", Content = "未提供必要參數", IsLightDismiss = true };
+                if (!int.TryParse(RDTextBox.Text.Trim(), out rd)) { ShowTip(reqParameters); return false; }
+                if (!int.TryParse(EDTextBox.Text.Trim(), out ed)) { ShowTip(reqParameters); return false; }
+                if (!int.TryParse(CDTextBox.Text.Trim(), out cd)) { ShowTip(reqParameters); return false; }
+                return true;
+            }
 
             SearchButton.Click += (_, _) => WebView.ExecuteScriptAsync($"OrderKeystone.search('{SearchBox.Text.Trim()}')");
             
@@ -139,6 +150,9 @@ namespace WebTool.Pages
             
             ResumeButton.Click += async (_, _) =>
             {
+                // 检查是否已填入所有必要数值
+                if (!checkDelayParam(out int rd, out int ed, out int cd)) return;
+
                 var stackPanel = new StackPanel() { Padding = new(16), MinWidth = 400 };
                 var tip = new InfoBar()
                 {
@@ -211,9 +225,6 @@ namespace WebTool.Pages
 
                 if (result == ContentDialogResult.Primary)
                 {
-                    if (!int.TryParse(RDTextBox.Text.Trim(), out int rd)) rd = 500;
-                    if (!int.TryParse(EDTextBox.Text.Trim(), out int ed)) ed = 500;
-                    if (!int.TryParse(CDTextBox.Text.Trim(), out int cd)) cd = 500;
                     if (!int.TryParse(completedTextBox.Text.Trim(), out int c)) c = 0;
                     if (!int.TryParse(fetchedTextBox.Text.Trim(), out int f)) f = 0;
 
@@ -229,10 +240,8 @@ namespace WebTool.Pages
 
             StartButton.Click += (_, _) =>
             {
-                var reqParameters = new TipMessage() { Title = "系統提示", Content = "未提供必要參數", IsLightDismiss = true };
-                if (!int.TryParse(RDTextBox.Text.Trim(), out int rd)) { ShowTip(reqParameters); return; }
-                if (!int.TryParse(EDTextBox.Text.Trim(), out int ed)) { ShowTip(reqParameters); return; }
-                if (!int.TryParse(CDTextBox.Text.Trim(), out int cd)) { ShowTip(reqParameters); return; }
+                // 检查是否已填入所有必要数值
+                if (!checkDelayParam(out int rd, out int ed, out int cd)) return;
 
                 switch (status)
                 {
