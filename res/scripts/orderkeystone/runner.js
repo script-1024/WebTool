@@ -53,7 +53,7 @@ class Runner {
         result.your_price = parseFloat(cost.querySelectorAll('.cost-row.your-cost span')[1].textContent.replace(/\$|,/g, ''));
     
         // 开头必须符合搜索字段才发送到用户端
-        if (result.id.startWith(OrderKeystone.currentSearched)) WebTool.postMsg('WriteToFile', result);
+        if (result.id.startsWith(OrderKeystone.currentSearched)) WebTool.postMsg('WriteToFile', result);
         this.releaseObject(result);
         return true;
     }
