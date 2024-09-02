@@ -25,6 +25,8 @@ public sealed partial class AutomaticOperationsPage
         {
             status = WorkingStatus.Ready;
             StartButton.Content = "開始";
+            xlsxFile?.SetProperty("completed", completed);
+            xlsxFile?.SetProperty("fetched", fetched);
             xlsxFile?.SaveAndClose();
             xlsxFile = null;
         }
@@ -150,8 +152,7 @@ public sealed partial class AutomaticOperationsPage
             case "Finished":
                 status = WorkingStatus.Ready;
                 StartButton.Content = "開始";
-                xlsxFile?.SaveAndClose();
-                xlsxFile = null;
+                SaveAndCloseFile();
                 break;
 
             default:

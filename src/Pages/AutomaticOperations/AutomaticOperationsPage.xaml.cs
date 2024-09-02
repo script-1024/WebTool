@@ -137,8 +137,7 @@ namespace WebTool.Pages
 
                 ShowTip("網頁通知", "已停止抓取操作");
 
-                xlsxFile?.SaveAndClose();
-                xlsxFile = null;
+                SaveAndCloseFile();
 
                 // 更新状态
                 ProgressDetailBar.IsIndeterminate = false;
@@ -212,13 +211,19 @@ namespace WebTool.Pages
                     };
 
                     // 调用异步方法进行文件选择和加载操作
-                    bool isSuccessed = await LoadFileAsync();
+                    bool isLoaded = await LoadFileAsync();
 
                     // 恢复按钮内容
                     selectFileButton.Content = "選擇檔案";
 
+                    if (!isLoaded) return;
+
+                    // 获取进度
+                    completedTextBox.Text = xlsxFile.GetProperty("completed", "0");
+                    fetchedTextBox.Text = xlsxFile.GetProperty("fetched", "0");
+
                     // 选择文件后才启用 PrimaryButton
-                    dialog.IsPrimaryButtonEnabled = isSuccessed;
+                    dialog.IsPrimaryButtonEnabled = true;
                 };
 
                 var result = await dialog.ShowAsync();
@@ -275,7 +280,7 @@ namespace WebTool.Pages
             picker.FileTypeFilter.Add(".xlsx");
 
             // 保存并关闭当前的 xlsx 文件（如果有）
-            xlsxFile?.SaveAndClose();
+            SaveAndCloseFile();
 
             StorageFile file = null;
 
@@ -288,6 +293,15 @@ namespace WebTool.Pages
             });
 
             return file != null;
+        }
+
+        private void SaveAndCloseFile()
+        {
+            if (xlsxFile is null) return;
+            xlsxFile.SetProperty("completed", completed);
+            xlsxFile.SetProperty("fetched", fetched);
+            xlsxFile.SaveAndClose();
+            xlsxFile = null;
         }
 
         private void CreateNewFile()
@@ -304,7 +318,7 @@ namespace WebTool.Pages
             while (File.Exists(path));
 
             // 保存旧文件
-            xlsxFile?.SaveAndClose();
+            SaveAndCloseFile();
 
             // 创建新文件
             xlsxFile = XlsxFile.Create(path, "product_list");

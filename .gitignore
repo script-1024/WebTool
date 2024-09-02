@@ -6,6 +6,7 @@
 #? User defined
 Properties/launchSettings.json
 local_only/
+build/
 
 # User-specific files
 *.rsuser
@@ -393,6 +394,7 @@ FodyWeavers.xsd
 # Windows Installer files from build outputs
 *.cab
 *.msi
+*.msix
 *.msm
 *.msp
 

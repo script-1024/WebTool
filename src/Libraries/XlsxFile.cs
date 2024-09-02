@@ -13,6 +13,7 @@ public class XlsxFile : IDisposable
     private readonly List<string> _headerList;
     private readonly FileStream _fileStream;
     private IXLWorksheet _worksheet;
+    private IXLWorksheet _properties;
     private bool _disposed = false;
     private int _currentRow;
 
@@ -100,6 +101,94 @@ public class XlsxFile : IDisposable
         int currentRow = worksheet.LastRowUsed()?.RowNumber() + 1 ?? 2;
 
         return new XlsxFile(fileStream, worksheet, headerList, currentRow) { Path = path };
+    }
+
+    /// <summary>
+    /// 依据指定键搜索特定行
+    /// </summary>
+    /// <param name="worksheet">作用中的工作表</param>
+    /// <param name="key">待搜索的键</param>
+    /// <param name="where">可选，键所在的列</param>
+    /// <returns><see cref="IXLRow"/> 找到的特定行或新的空行</returns>
+    private static IXLRow SearchSpecificRow(IXLWorksheet worksheet, string key, int where = 1)
+    {
+        int row = 1;
+
+        while (!string.IsNullOrEmpty(worksheet.Cell(row, where).GetString()))
+        {
+            if (worksheet.Cell(row, 1).GetString().Equals(key, StringComparison.OrdinalIgnoreCase))
+                return worksheet.Row(row);
+            row++;
+        }
+
+        // 如果键未找到，传回新的空行
+        return worksheet.Row(row);
+    }
+
+    private void InitializePropertiesWorksheet()
+    {
+        _properties =
+            _workbook.Worksheets.FirstOrDefault(ws => ws.Name == "properties") ?? 
+            _workbook.Worksheets.Add("properties");
+
+        _properties.RowHeight = 24;
+        _properties.Style.Font.FontSize = 12;
+        _properties.Style.Font.FontName = "Arial";
+        _properties.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+        var keyColumn = _properties.Column(1);
+        keyColumn.Width = 18;
+        keyColumn.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+
+        var valueColumn = _properties.Column(2);
+        valueColumn.Width = 8;
+        valueColumn.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+    }
+
+    /// <summary>
+    /// 设置或更新属性工作表
+    /// </summary>
+    public void SetProperty(string key, object value)
+    {
+        if (_properties is null) InitializePropertiesWorksheet();
+        var row = SearchSpecificRow(_properties, key);
+        row.Cell(1).Value = key;
+        if (value is null) row.Cell(2).Clear();  // 如果值为 null，清空单元格
+        else row.Cell(2).SetValue(XLCellValue.FromObject(value));  // 使用 SetValue 保留数据类型
+    }
+
+    /// <summary>
+    /// 从属性工作表取得值
+    /// </summary>
+    /// <param name="key">属性的键名</param>
+    /// <param name="fallback">类型转换失败的回退值</param>
+    public T GetProperty<T>(string key, T fallback = default)
+    {
+        if (_properties is null) InitializePropertiesWorksheet();
+        var value = SearchSpecificRow(_properties, key).Cell(2).Value;
+
+        object obj = value.Type switch
+        {
+            XLDataType.Blank => null,
+            XLDataType.Boolean => value.GetBoolean(),
+            XLDataType.Number => value.GetNumber(),
+            XLDataType.Text => value.GetText(),
+            XLDataType.Error => value.GetError(),
+            XLDataType.DateTime => value.GetDateTime(),
+            XLDataType.TimeSpan => value.GetTimeSpan(),
+            _ => throw new InvalidCastException(),
+        };
+
+        try
+        {
+            return (T)Convert.ChangeType(obj, typeof(T));
+        }
+        catch (Exception e)
+        {
+            System.Diagnostics.Debug.WriteLine(
+                $"Unable to convert value '{value}' to specific type '{typeof(T)}' for key '{key}': {e.Message}");
+            return fallback;
+        }
     }
 
     /// <summary>

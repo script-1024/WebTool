@@ -19,8 +19,7 @@ public sealed partial class AutomaticOperationsPage
 
     private void Window_Closing(object sender, WindowClosingEventArgs e)
     {
-        xlsxFile?.SaveAndClose();
-        xlsxFile = null;
+        SaveAndCloseFile();
 
         App.MainWindow.Closing -= Window_Closing;
         e.TryCancel();
@@ -28,8 +27,7 @@ public sealed partial class AutomaticOperationsPage
 
     private void CurrentDomain_ProcessExit(object sender, EventArgs e)
     {
-        xlsxFile?.SaveAndClose();
-        xlsxFile = null;
+        SaveAndCloseFile();
     }
 
     #region WebView
