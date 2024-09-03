@@ -18,18 +18,9 @@ public sealed partial class AutomaticOperationsPage
         UpdateWebViewNavigationBar();
         (ReloadButton.Icon as FontIcon).Glyph = "\uE72C"; // `Reload` icon
 
-        // 重置右侧面板状态
+        // 重置状态
         ProgressDetailBar.IsIndeterminate = false;
-        if (!WebView.Source.AbsoluteUri.StartsWith("https://preview.orderkeystone.com/")
-            || StartButton.Content.ToString() != "繼續")
-        {
-            status = WorkingStatus.Ready;
-            StartButton.Content = "開始";
-            xlsxFile?.SetProperty("completed", completed);
-            xlsxFile?.SetProperty("fetched", fetched);
-            xlsxFile?.SaveAndClose();
-            xlsxFile = null;
-        }
+        if (status == WorkingStatus.Working) Runner_Pause();
 
         // 注入 JavaScript 代码
         // 包含一些实用函数，并检测鼠标移动

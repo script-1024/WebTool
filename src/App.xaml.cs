@@ -11,7 +11,7 @@ namespace WebTool
     public partial class App : Application
     {
         public static string WorkingDirectory { get; private set; } = @"%USERPROFILE%\Documents\WebTool";
-        public static string FullVersion { get; private set; } = "Beta 1.6 build 0902";
+        public static string FullVersion { get; private set; } = "Beta 1.6.1 build 0903";
         public static string ShortVersion { get; private set; } = "1.6";
         public static string Language { get; private set; } = "zh-TW";
 

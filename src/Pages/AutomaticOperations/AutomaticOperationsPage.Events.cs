@@ -1,7 +1,6 @@
 ﻿using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.System;
 using Windows.Foundation;
@@ -38,6 +37,16 @@ public sealed partial class AutomaticOperationsPage
     private void WebView_MouseMove(Point newPosition)
     {
         mousePosition = newPosition;
+    }
+
+    private void CoreWebView2_SourceChanged(CoreWebView2 sender, CoreWebView2SourceChangedEventArgs args)
+    {
+        if (status != WorkingStatus.Ready && !WebView.Source.AbsoluteUri.StartsWith("https://preview.orderkeystone.com/"))
+        {
+            status = WorkingStatus.Ready;
+            StartButton.Content = "開始";
+            SaveAndCloseFile();
+        }
     }
 
     #endregion

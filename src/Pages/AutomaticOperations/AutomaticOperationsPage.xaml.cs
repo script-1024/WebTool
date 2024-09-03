@@ -91,6 +91,7 @@ namespace WebTool.Pages
             await WebView.EnsureCoreWebView2Async();
             var coreWebView2 = WebView.CoreWebView2;
 
+            coreWebView2.SourceChanged += CoreWebView2_SourceChanged;
             coreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
             coreWebView2.Settings.UserAgent =
                @$"Mozilla/5.0 (Windows NT 10.0; Win64; x64)
