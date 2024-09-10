@@ -23,7 +23,8 @@ class Runner {
             list_price: 0,
             your_price: 0,
             name: '',
-            description: ''
+            description: '',
+            img: ''
         };
     }
 
@@ -34,6 +35,7 @@ class Runner {
         obj.your_price = 0;
         obj.name = '';
         obj.description = '';
+        obj.img = '';
         this.objectPool.push(obj);
     }
 
@@ -51,7 +53,8 @@ class Runner {
         result.description = info.querySelector('.part-description').innerText.replace('• ', '').replaceAll('\n• ', ', ');
         result.list_price = parseFloat(cost.querySelectorAll('.cost-row span')[1].textContent.replace(/\$|,/g, ''));
         result.your_price = parseFloat(cost.querySelectorAll('.cost-row.your-cost span')[1].textContent.replace(/\$|,/g, ''));
-    
+        result.img = card.querySelector('img').src;
+
         // 开头必须符合搜索字段才发送到用户端
         if (result.id.startsWith(OrderKeystone.currentSearched)) WebTool.postMsg('WriteToFile', result);
         this.releaseObject(result);
