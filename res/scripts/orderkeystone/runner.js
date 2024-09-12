@@ -46,13 +46,15 @@ class Runner {
         const info = card.querySelector('.product-info');
         const cost = card.querySelector('.product-costs');
         const result = this.createObject();
+        const list_price = cost.querySelectorAll('.cost-row span')[1];
+        const your_price = cost.querySelectorAll('.cost-row.your-cost span')[1];
         
         // 外层数据
         result.id = info.querySelector('a').text;
         result.name = info.querySelector('.product-title').textContent;
         result.description = info.querySelector('.part-description').innerText.replace('• ', '').replaceAll('\n• ', ', ');
-        result.list_price = parseFloat(cost.querySelectorAll('.cost-row span')[1].textContent.replace(/\$|,/g, ''));
-        result.your_price = parseFloat(cost.querySelectorAll('.cost-row.your-cost span')[1].textContent.replace(/\$|,/g, ''));
+        result.list_price = parseFloat((list_price !== undefined && list_price !== null) ? list_price.textContent.replace(/\$|,/g, '') : NaN);
+        result.your_price = parseFloat((your_price !== undefined && your_price !== null) ? your_price.textContent.replace(/\$|,/g, '') : NaN);
         result.img = card.querySelector('img').src;
 
         // 开头必须符合搜索字段才发送到用户端
